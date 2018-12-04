@@ -1,1532 +1,1531 @@
-\f0\fs24 \cf0 ;;; -*- syntax: Sal; font-size: 16; line-numbers: no; -*-\
-;; Genre Generator \
-\
-\
-\
-\
-; General algorhythmic and nonalgorhthmic attempts at creating portraying\
-; differing styles of music. \
-\
-; Our first step is to specify our channels. Since we touch on different\
-; genres, we will be using all 10 channels. Of course, we will designate\
-; channel 9 to our Percussion channel.\
-\
-; Channel  0: Feedback Guitar\
-; Channel  1: Bass \
-; Channel  2: Music Box\
-; Channel  3: Pan Flute\
-; Channel  4: Orchestra Hit \
-; Channel  5: Gunshot (used w 808 snare drum)\
-; Channel  6: Polysynth (used w 808 bass drum)\
-; CHannel  7: soundtrack\
-; Channel  8: Telephone\
-; Channel  9: Percussion\
-\
-begin\
-  with piano = 29, bass = 33, crystal = 90, panflute = 75, orchhit = 55, \
-gun = 127, polysynth = 90, soundtrack = 79, phone = 124\
-  mp:instruments(piano, bass, crystal, panflute, orchhit, gun, polysynth, soundtrack, phone)\
-end\
-\
-\
-;https://static1.squarespace.com/static/55cbdf4fe4b0989acda7322c/t/562ea50de4b02fc24802f1f0/1445897485726/General%2BMIDI%2BPatch%2BList.pdf\
-;the link above contains all MIDI programming information, but MAKE SURE\
-; to reduce each value by 1 as Grace operates from 0-127\
-\
-; Now we will set all of our Scale, Changes, tempo, and sequenctial melodic\
-; information in one place:\
-\
-variable water-scale = \{0 4 6 11 12 14 16 23 26\},\
-         water-changes = keynum(\{c4 g4 d4 g4 c4 g4 d4 g4\}),\
-         water-tempo = 60,\
-         water-notes = keynum(\{c4 d4 e4 fs4 b4 d5 c6 d6 fs6 b6 d7 c7 d8 fs8 b8 d8\})\
-\
-variable morning-scale = \{0 2 4 7 9 12 14 16 19\},\
-         morning-changes = keynum(\{bf3 bf3 bf3 c3 f3 f3 c3 g3\}),\
-         morning-tempo = 90,\
-         morning-notes = keynum(\{bf5 g5 f5 ef5 f5 g5 bf5 g5 f5 ef5 f5 g5 bf5 g5 bf5 c6 g5 c6 bf5 g5 f5 ef5 ef5 ef5\})\
-        \
-variable doom-scale = \{0 2 3 7 9 10 12 14 15\},\
-         doom-changes = keynum(\{df3\}),\
-         doom-tempo = 120\
-\
-variable bossa-scale = \{0 4 7 11 12 16 29 24 30\},\
-         bossa-changes = keynum(\{e2 e2 e2 e2 e2 e2 e2 e2 e2 e2 e2 e2 e2 e2\}),\
-         bossa-tempo = 120\
-                                 \
-                                 \
-variable spiegel-scale = \{0 7 9 12 14 19 21 24 26\},\
-         spiegel-changes = keynum(\{e3 e3 b3 e3 e3 b3 e3 b3 fs4 df4 fs4 e3 e3 fs4 df4 a3 df3 e3 e3 e3\}),\
-         spiegel-tempo = 80,\
-         spiegel-notes = keynum(\{e3 e3 b3 b3 b3 e3 b3 b3 b3 b3 fs4 fs4 fs4 b4 b4 b4 b4 b4 b4 b4 b4\})\
-\
-variable 808-scale = \{35 42 42 42 42 42 42 42 42\},\
-         808-changes = \{0\},\
-         808-tempo = 60\
-\
-variable beat-scale = \{0 0 3 3 7 7 10 10 12\},\
-         beat-changes = keynum(\{c2 c2 g1 ef3 c2 c2 ef2 g1\}),\
-         beat-tempo = 60\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-; We will now prepare processes to generate both algorhytmic\
-; and sequenced elements to create a modern style trap beat\
-\
-;; The 808-beat-process\
-\
-; First the sequenced elements\
-\
-;808 Snare\
-process 808-snare (tmpo, ampl)\
- with rhy = in-tempo(1, tmpo),\
-      dur = in-tempo( 1, tmpo),\
-      amp = 1,\
-      pat = make-cycle(\{"rest" 37 "rest" 37 "rest" 37 "rest" 37\})\
-  repeat 4\
-  for x = next(pat)\
-  if (number?(x))\
-    mp:midi(key: x, chan: 9, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-;808 Snare2 (gunshot sample)\
-process 808-snare2 (tmpo, ampl)\
- with rhy = in-tempo(1, tmpo),\
-      dur = in-tempo( 1/4, tmpo),\
-      amp = .8,\
-      pat = make-cycle(\{"rest" 97 "rest" 97 "rest" 97 "rest" 97\})\
-  repeat 4\
-  for x = next(pat)\
-  if (number?(x))\
-    mp:midi(key: x, chan: 5, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-;808-BD (low bass, unfortunately has hum)\
-process 808-BD (tmpo, ampl)\
-  with rhy = in-tempo(1/2, tmpo),\
-       dur = in-tempo(1, tmpo),\
-       amp = 1,\
-       pat = make-cycle(\{24 "rest" "rest" 24 "rest" "rest" "rest" "rest" "rest"\})\
-  repeat 16\
-  for x = next(pat)\
-  if (number?(x))\
-  mp:midi(key: x, chan: 1, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-;808-organ\
-process 808-organ (tmpo, ampl)\
-  with rhy = in-tempo(1/8, tmpo),\
-       dur = in-tempo(1/12, tmpo),\
-       amp = .5,\
-       pat = make-cycle(\{60 "rest" "rest"  "rest" 67 "rest" "rest" "rest" 72 "rest" "rest" "rest" 67 "rest" "rest" "rest" \})\
-  repeat 32\
-  for x = next(pat)\
-  if (number?(x))\
-  mp:midi(key: x, chan: 7, dur: dur, amp: amp * ampl)\
-  mp:midi(key: x + 3, chan: 7, dur: dur, amp: amp * ampl)\
-  mp:midi(key: x + 7, chan: 7, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-; The arp is randomly generated from 16 notes of a chromatic scale\
-;808-arp\
-process 808-arp (tmpo, ampl)\
-  with rhy = in-tempo(1/8, tmpo),\
-       dur = in-tempo(1/32, tmpo),\
-       amp = .5,\
-       pat = make-heap(\{60 59 58 57 56 55 54 53 61 62 63 64 65 67 68 69\})\
-  repeat 32\
-  for x = next(pat)\
-  if (number?(x))\
-  mp:midi(key: next(pat), chan: 8, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-; The hi-hat and Bass drum are algorhythmically generated based on odds. \
-; This algorhythm is based on the jazz-bass seting from the "Automatic Jazz"\
-; example we saw in class:\
-\
-process 808-hats (jscale, on, tmpo, ampl)\
-  with k, rhy = in-tempo(1/16, tmpo),\
-       tonics = make-weighting(getset(jscale, \{1 1 1 1 1\})),\
-       colors = make-weighting(getset(jscale, \{0 0 0 0 0\})),\
-       amps = 1,\
-       durs = make-cycle(\{1/8 1/8 1/8\}) ,\
-       ;; beat map. t is tonic, c is color, r is rest\
-       bmap = make-cycle(\
-                         list(\
-          ;; "stuttered" hats pattern 50%\
-          ;; triplet patterm                    \
-                              make-weighting(list(rancyc( \{:c r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t r r r\}, .5),\
-                                                  rancyc( \{:t r r r :t r r r :t r r r :t r r r :t r r :t r r :t r r :t r r :t r r :t\}, .1),\
-                                                  rancyc( \{:t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t :t :t :t\}, .1),\
-                                                  rancyc( \{:t r r :t r r :t r r :t r r :t r r :t :t r r r :t r r r :t r r r :t r r r\}, .1),\
-                                                  rancyc( \{:t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :c r r r :t r r r\}, .1),\
-                                                  rancyc( \{:t r r r :t r :t r :t r r r :t :t :t :t :t r r :t r r :t r r :t r r :t r r :t\}, .1),\
-                                                  rancyc( \{:t r r r :t r r r :t r :t r r r :t r :t :t :t :t :t r r r :t r r r :t r r r\}, .1),\
-                                                  rancyc( \{:t :t :t :t :t r r r :t r :t r :t r r r :t r r r :t r r r :t r r r :t r r r\}, .1),\
-                                                  rancyc( \{:t r r r :t r r r :t r r r :t r r r r r r r r r r r :c r r r r r r r\}, .1),\
-                                                  rancyc( \{:t r r r :t r r r :c r r r :t r r r :t r r r :t r r r :t r :c r :t r r r\}, .1)),\
-                                                 \
-                                                1),\
-\
-                                                  make-weighting(list(rancyc( \{:t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t :t :t :t\}, .5),\
-                                                  rancyc( \{:t r r :t r r :t r r :t r r :t r r :t r r :t r r :t r r :t r r :t r r :t r\}, .1),\
-                                                  rancyc( \{:t r r r :t r r r :t r r r :t r r r\}, .1)),\
-                                                 \
-                                                1),\
-\
-                                                  make-weighting(list(rancyc( \{:t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t :t :t :t\}, .5),\
-                                                  rancyc( \{:t r r :t r r :t r r :t r r :t r r :t r r :t r r :t r r :t r r :t r r :t r\}, .1),\
-                                                  rancyc( \{:t r r r :t r r r :t r r r :t r r r\}, .1)),\
-                                                 \
-                                                1),\
-                                             \
-                 \
-\
-                           ;; two possible values for 12\
-                                                  make-weighting(list(rancyc( \{:t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t :t :t :t\}, 1),\
-                                               rancyc( \{r r :t :t\}, .25))))\
-                      )\
-                                         \
-                      \
-  repeat 32\
-  for x = next(bmap)\
-  for d = in-tempo( next(durs), tmpo)\
-  for a = next(amps)\
-  if (equal?(x, :t))\
-    set k = next(tonics)\
-  else \
-    if (equal?( x, :c))\
-      set k = next(colors)\
-    else \
-      set k = x\
-    end\
-  end\
-  if (number?(k))\
-    mp:midi(key: transpose( k, on), chan: 9, dur: d, amp: a * ampl)\
-\
-  end\
-  wait rhy\
-end\
-\
-; Using "Automatic Jazz's conductor function , we seperately process\
-; the drum set, the melodic elements and the bass\
-\
-\
-\
-;808 melodic:\
-process 808-melody (measures, changes, tempo, jscale)\
-  with roots = make-cycle(changes),\
-       ampl = 1\
-  for meas below measures\
-  for root = next(roots)\
-  if (0 =  meas % 12)\
-    set ampl = 1\
-  end\
-  sprout(808-arp(tempo,ampl))\
-  sprout(808-organ(tempo,ampl))\
-  wait in-tempo(4, tempo)\
-end\
-\
-; 808 bass\
-\
-process 808-bass (measures, changes, tempo, jscale)\
-  with roots = make-cycle(changes),\
-       ampl = 1\
-  for meas below measures\
-  for root = next(roots)\
-  if (0 =  meas % 12)\
-    set ampl = 1\
-  end\
-  sprout(808-BD(tempo, ampl))\
-  wait in-tempo(16, tempo)\
-end\
-\
-\
-;808-beat track\
-process 808-beat (measures, changes, tempo, jscale)\
-  with roots = make-cycle(changes),\
-       ampl = 1\
-  for meas below measures\
-  for root = next(roots)\
-  if (0 =  meas % 12)\
-    set ampl = 1\
-  end\
-  sprout(808-BD(tempo, ampl), 4)\
-  sprout(808-hats(jscale, root, tempo, ampl))\
-  sprout(808-snare(tempo, ampl), 4)\
-  sprout(808-snare2(tempo, ampl), 4)\
-  wait in-tempo(2, tempo)\
-end\
-\
-; sprouting 3 different process' to separate algorhythmic rhythms from \
-; sequenced elements. Seperate sequencing also lends itself well to \
-; arrangement of pieces\
-\
-sprout(list(808-beat( 16, 808-changes, 808-tempo, 808-scale), \
-808-melody(8, beat-changes, beat-tempo, beat-scale), \
-808-bass(4, beat-changes, beat-tempo, beat-scale)), \
-\{4 0 8\})\
-\
-;stop quits the program\
-stop()\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-; Now we will share elements and process with a few deliniations to \
-; blend two different styles of music with the same melody\
-\
-;; The Nu-Bossa-process\
-\
-; First the rhythmic sequences:\
-\
-;Straight HIHAT\
-process straight-hihat (tmpo, ampl)\
-  with rhy = in-tempo(1/2, tmpo),\
-       dur = in-tempo( 1/3, tmpo),\
-       amp = 1,\
-       pat = make-cycle(\{42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42\})\
-  repeat 32\
-  for x = next(pat)\
-  if (number?(x))\
-    mp:midi(key: x, chan: 9, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-;Straight SNARE/BASS\
-process straight-snare-bass (tmpo, ampl)\
-  with rhy = in-tempo(1/4, tmpo),\
-       dur = in-tempo( 1, tmpo),\
-       amp = .8,\
-       pat = make-cycle(\{35 "rest" "rest" "rest" 40 "rest" 35 "rest" 35 "rest" "rest" "rest" 40 "rest" "rest" "rest" 35 "rest" "rest" "rest" 40 "rest" 35 "rest" 35 "rest" 35 "rest" 40 "rest" "rest" "rest"\})\
-  repeat 32\
-  for x = next(pat)\
-  if (number?(x))\
-    mp:midi(key: x, chan: 9, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-;Bossa HIHAT\
-process bossa-hihat (tmpo, ampl)\
-  with rhy = in-tempo(1/2, tmpo),\
-       dur = in-tempo( 1, tmpo),\
-       amp = .5,\
-       pat = make-cycle(\{42 "rest" 42 42 42 "rest" 42 42 42 "rest" 42 42 42 "rest" 42 42 \})\
-  repeat 16\
-  for x = next(pat)\
-  if (number?(x))\
-    mp:midi(key: x, chan: 9, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-;Bossa SNARE/BASS\
-process bossa-snare-bass (tmpo, ampl)\
-  with rhy = in-tempo(1/2, tmpo),\
-       dur = in-tempo( 1, tmpo),\
-       amp = .7,\
-       pat = make-cycle(\{35 "rest" 37 35 35 37 "rest" 35 37 "rest" "rest" 37 35 "rest" 37 "rest"\})\
-  repeat 16\
-  for x = next(pat)\
-  if (number?(x))\
-    mp:midi(key: x, chan: 9, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-;Bossa RHYTHM\
-\
-process bossa-rhythm (tmpo, ampl)\
-  with rhy = in-tempo(1/2, tmpo),\
-       dur = in-tempo(1/2, tmpo),\
-       amp = .3,\
-       pat = make-cycle(\{64 "rest" 64  "rest" "rest" 64 "rest" 64 "rest" 64 "rest" "rest" 64 "rest" 64 "rest" \})\
-  repeat 16\
-  for x = next(pat)\
-  if (number?(x))\
-  mp:midi(key: x, chan: 6, dur: dur, amp: amp * ampl)\
-  mp:midi(key: x + 11, chan: 6, dur: dur, amp: amp * ampl)\
-  mp:midi(key: x + 4, chan: 6, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-process bossa-rhythm2 (tmpo, ampl)\
-  with rhy = in-tempo(1/2, tmpo),\
-       dur = in-tempo(1/2, tmpo),\
-       amp = .3,\
-       pat = make-cycle(\{66 "rest" 66  "rest" "rest" 66 "rest" 66 "rest" 66 "rest" "rest" 66 "rest" 66 "rest" \})\
-  repeat 16\
-  for x = next(pat)\
-  if (number?(x))\
-  mp:midi(key: x, chan: 6, dur: dur, amp: amp * ampl)\
-  mp:midi(key: x + 4, chan: 6, dur: dur, amp: amp * ampl)\
-  mp:midi(key: x + 10, chan: 6, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-process bossa-rhythm3 (tmpo, ampl)\
-  with rhy = in-tempo(1/2, tmpo),\
-       dur = in-tempo(1/2, tmpo),\
-       amp = .3,\
-       pat = make-cycle(\{66 "rest" 66  "rest" "rest" 66 "rest" 66 "rest" 66 "rest" "rest" 66 "rest" 66 "rest" \})\
-  repeat 8\
-  for x = next(pat)\
-  if (number?(x))\
-  mp:midi(key: x, chan: 6, dur: dur, amp: amp * ampl)\
-  mp:midi(key: x + 3, chan: 6, dur: dur, amp: amp * ampl)\
-  mp:midi(key: x + 10, chan: 6, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-process bossa-rhythm4 (tmpo, ampl)\
-  with rhy = in-tempo(1/2, tmpo),\
-       dur = in-tempo(1/2, tmpo),\
-       amp = .3,\
-       pat = make-cycle(\{"rest" 65 "rest"  "rest" 65 "rest" "rest" 65 "rest" 65 "rest" "rest" 65 "rest" 65 "rest" \})\
-  repeat 8\
-  for x = next(pat)\
-  if (number?(x))\
-  mp:midi(key: x, chan: 6, dur: dur, amp: amp * ampl)\
-  mp:midi(key: x + 4, chan: 6, dur: dur, amp: amp * ampl)\
-  mp:midi(key: x + 11, chan: 6, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-; Next, the melodies are divided in to 4 processes in so they can be \
-; manipulated individually\
-\
-;BOSSA melody pt 1\
-process bossa-melody1 (tmpo, ampl)\
-  with rhy = in-tempo(1/2, tmpo),\
-       dur = in-tempo( 1/2, tmpo),\
-       amp = .5,\
-       pat = make-cycle(\{78 "rest" "rest" 75 75 73 "rest" 78 "rest" "rest" 75 75 "rest" 75 73 78\})\
-  repeat 16\
-  for x = next(pat)\
-  if (number?(x))\
-    mp:midi(key: x, chan: 3, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-;BOSSA melody pt 2\
-process bossa-melody2 (tmpo, ampl)\
-  with rhy = in-tempo(1/2, tmpo),\
-       dur = in-tempo( 1/2, tmpo),\
-       amp = .5,\
-       pat = make-cycle(\{"rest" "rest" 75 "rest" 75 "rest" 73 78 "rest" 78 75 75 "rest" 75 73 76\})\
-  repeat 16\
-  for x = next(pat)\
-  if (number?(x))\
-    mp:midi(key: x, chan: 3, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-;BOSSA melody pt 3\
-process bossa-melody3 (tmpo, ampl)\
-  with rhy = in-tempo(1/2, tmpo),\
-       dur = in-tempo( 1/2, tmpo),\
-       amp = .5,\
-       pat = make-cycle(\{"rest" 76 "rest" 73 "rest" 73 71 75 "rest" "rest" "rest" 71 "rest" 71 69 "rest" \})\
-  repeat 16\
-  for x = next(pat)\
-  if (number?(x))\
-    mp:midi(key: x, chan: 3, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-;BOSSA melody pt 4\
-process bossa-melody4 (tmpo, ampl)\
-  with rhy = in-tempo(1/2, tmpo),\
-       dur = in-tempo( 3.5, tmpo),\
-       amp = .5,\
-       pat = make-cycle(\{"rest" "rest" 71 "rest" "rest" 0 "rest" "rest"  "rest"  "rest" "rest" "rest" "rest"\})\
-  repeat 8\
-  for x = next(pat)\
-  if (number?(x)) \
-        mp:midi(key: x, chan: 3, dur: dur, amp: amp * ampl)\
-      end\
-     wait rhy\
-end\
-\
-;METAL melody pt 1\
-process metal-melody1 (tmpo, ampl)\
-  with rhy = in-tempo(1/2, tmpo),\
-       dur = in-tempo( 3/4, tmpo),\
-       amp = 1,\
-       pat = make-cycle(\{66 "rest" "rest" 63 63 61 "rest" 66 "rest" "rest" 63 63 "rest" 63 61 66\})\
-  repeat 16\
-  for x = next(pat)\
-  if (number?(x))\
-    mp:midi(key: x, chan: 0, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-;METAL melody pt 2\
-process metal-melody2 (tmpo, ampl)\
-  with rhy = in-tempo(1/2, tmpo),\
-       dur = in-tempo( 3/4, tmpo),\
-       amp = 1,\
-       pat = make-cycle(\{"rest" "rest" 63 "rest" 63 "rest" 61 66 "rest" 66 63 63 "rest" 63 61 64\})\
-  repeat 16\
-  for x = next(pat)\
-  if (number?(x))\
-    mp:midi(key: x, chan: 0, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-;METAL melody pt 3\
-process metal-melody3 (tmpo, ampl)\
-  with rhy = in-tempo(1/2, tmpo),\
-       dur = in-tempo( 3/4, tmpo),\
-       amp = 1,\
-       pat = make-cycle(\{"rest" 64 "rest" 61 "rest" 61 59 63 "rest" "rest" "rest" 59 "rest" 59 57 "rest"  \})\
-  repeat 16\
-  for x = next(pat)\
-  if (number?(x))\
-    mp:midi(key: x, chan: 0, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-;METAL melody pt 4\
-process metal-melody4 (tmpo, ampl)\
-  with rhy = in-tempo(1/2, tmpo),\
-       dur = in-tempo( 6, tmpo),\
-       amp = 1,\
-       pat = make-cycle(\{"rest" "rest" 59 "rest" "rest" "rest" "rest" "rest"  "rest"  "rest" "rest" "rest" "rest"\})\
-  repeat 8\
-  for x = next(pat)\
-  if (number?(x)) \
-        mp:midi(key: x, chan: 0, dur: dur, amp: amp * ampl)\
-      end\
-     wait rhy\
-end\
-\
-\
-; Soling process. This is based off of the ride cymbal function in \
-;"Automatic Jazz" which creates a soloing pan flute playing either 8th\
-; note triplets or straight 16ths, with rests intermittently as \
-; straight 16ths with no breaks is a cardinaljazz sin\
-\
-\
-\
-function or12r (wt)\
-\
-  with ridecymb1 = make-heap(\{52 78 75 73 71 84 85\}), \
-  ridecymb2 = make-heap(\{60 74 75 76 78 80 82 82 84\}),\
-       restitem = list("rest", wt), \
-       ride1 = make-weighting(list(ridecymb1, restitem), 1),\
-       ride2 = make-weighting(list(ridecymb2, restitem), 1)\
-  make-weighting( list( list(ride1, 1.5), ride2), 2)\
-end\
-\
-process bossa-soloing (tmpo, ampl)\
-  with rhy = in-tempo(odds(0.5, 1/4, 1/3), tmpo),\
-       ridecymb1 = make-heap(\{56 59 64 71 73 76\}) , \
-       ridecymb2 = make-heap(\{66 71 73 78 83 85 87\}),\
-       amps = make-cycle( \{.6 .5 .9 .7 .5 1 .6 .5 .9 .7 .5 1\}),\
-       knums = make-cycle( list( ridecymb1, "rest", or12r( 5),\
-                                 or12r( 5), "rest" , ridecymb2,\
-                                 ridecymb1, "rest" , ridecymb2,\
-                                 ridecymb2, "rest" , or12r( 5),\
-                                 or12r( 5), "rest" , ridecymb1,\
-                                 or12r( 5), or12r(7), or12r(7)))                         \
-  repeat 64\
-  for k = next(knums)\
-  for a = next(amps)\
-  if (number?(k))\
-    mp:midi(key: k, chan: 3, dur: rhy, amp: a * ampl)\
-  end\
-  wait rhy\
-end\
-\
-\
-\
-\
-; Again we will use the "Jazz Bass" alogrhythim to accompany the melody\
-; but this time the rhythm is strict and melodic colours\
-; (ie. anything that is not a tonic) is taken out. 3 algorhytms are \
-; needed as the tune requires a minor 7 shape and a diminished shape\
-\
-\
-; first we set up the scale\
-function getset (jscale, ints)\
-  ; return the notes in scale at the positions in ints.\
-  ; used to partition scale into tonic and decoration\
-  loop with l = \{\}\
-    for i in ints set l &= jscale[i]\
-    finally l\
-  end\
-end\
-\
-;and a random select function\
-function rancyc (data, prob)\
-  list( make-cycle( data), prob)\
-end\
-\
-\
-\
-;bossa-bass\
-process bossa-bass (jscale, on, tmpo, ampl)\
-  with k, rhy = in-tempo(1/2, tmpo),\
-       tonics = make-weighting(getset(jscale, \{0 4 4 4 7 \})),\
-       colors = make-weighting(getset(jscale, \{1 3 5 6 8 \})),\
-       amps = make-cycle(\{.5\}),\
-       durs = make-cycle(\{1 1/4\}) ,\
-       ;; beat map. t is tonic, c is color, r is rest\
-       bmap = make-cycle(\
-                         list(\
-                              ;; 5 possible patterns for triplets 1-4\
-                              make-weighting(list(rancyc( \{:t r r :t :t r r :t\}, .8),\
-                                                  rancyc( \{:t r r :t :t r r :t\}, .05),\
-                                                  rancyc( \{:t r :t :t r :t :t r\}, .05),\
-                                                  rancyc( \{:t :t :t :t :t r r r\}, .05),\
-                                                  rancyc( \{:t :t :t r :t r :t :t\}, .05)),\
-                                                1),\
-                           ;; 5 possible patterns for 5-7\
-                           make-weighting(list(rancyc( \{:t r r :t :t r r :t\}, 1)),\
-                                             \
-                                          1) ,\
-                           ;; 5 possible patterns for 8-10\
-                           make-weighting(list(rancyc( \{:t r r :t :t r r :t\}, .8),\
-                                               rancyc( \{:t :t :t r :t :t :c r\}, .05),\
-                                               rancyc( \{:t r r r :t r r r\}, .05),\
-                                               rancyc( \{:t :t :t r :t :t :t r\}, .05),\
-                                               rancyc( \{:t :t r r :t :t :t :t\}, .05)),\
-                                          1),\
-                           ;; two possible values for 11-12\
-                           make-weighting(list(rancyc( \{:t r r :t :t r r :t\}, .8),\
-                                               rancyc( \{r r r r :t :t r :t\}, .05),\
-                                               rancyc( \{:c r :t :c :t r :t :t\}, .05),\
-                                               rancyc( \{r r :t :t r r :t :t\}, .05),\
-                                               rancyc( \{r r :t r r r :t r\}, 05)),\
-                                          1) ,\
-                           ;; two possible values for 13-15\
-                           make-weighting(list(rancyc( \{:t r r :t :t r r :t\}, .8),\
-                                               rancyc( \{r r r r :t :t r :c\}, .05),\
-                                               rancyc( \{:c r :t :t :t r :t :t\}, .05),\
-                                               rancyc( \{r r :t :t r r :t :t\}, .05),\
-                                               rancyc( \{r r :t r r r :t r\}, .05))))\
-)\
-                                         \
-                      \
-  repeat 16\
-  for x = next(bmap)\
-  for d = in-tempo( next(durs), tmpo)\
-  for a = next(amps)\
-  if (equal?(x, :t))\
-    set k = next(tonics)\
-  else \
-    if (equal?( x, :c))\
-      set k = next(colors)\
-    else \
-      set k = x\
-    end\
-  end\
-  if (number?(k))\
-    mp:midi(key: transpose( k, on), chan: 1, dur: d, amp: a * ampl)\
-  end\
-  wait rhy\
-end\
-\
-\
-;bossa-bass2\
-process bossa-bass2 (jscale, on, tmpo, ampl)\
-  with k, rhy = in-tempo(1/2, tmpo),\
-       tonics = make-weighting(getset(jscale, \{0 0 2 2 7 \})),\
-       colors = make-weighting(getset(jscale, \{1 3 5 6 8 \})),\
-       amps = make-cycle(\{.5\}),\
-       durs = make-cycle(\{1 1/4\}) ,\
-       ;; beat map. t is tonic, c is color, r is rest\
-       bmap = make-cycle(\
-                         list(\
-                              ;; 5 possible patterns for triplets 1-4\
-                              make-weighting(list(rancyc( \{:t r r :t :t r r :t\}, 1),\
-                                                  rancyc( \{:t r r :t :t r r :t\}, .1),\
-                                                  rancyc( \{:t r :t :t r :t :t r\}, .1),\
-                                                  rancyc( \{:t :t :t :t :t r r r\}, .1),\
-                                                  rancyc( \{:t :t :t r :t r :t :t\}, .1)),\
-                                                1),\
-                           ;; 5 possible patterns for 5-7\
-                           make-weighting(list(rancyc( \{:t r r :t :t r r :t\}, 1)),\
-                                             \
-                                          1) ,\
-                           ;; 5 possible patterns for 8-10\
-                           make-weighting(list(rancyc( \{:t r r :t :t r r :t\}, 1),\
-                                               rancyc( \{:t :t :t r :t :t :c r\}, .1),\
-                                               rancyc( \{:t r r r :t r r r\}, .1),\
-                                               rancyc( \{:t :t :t r :t :t :t r\}, .1),\
-                                               rancyc( \{:t :t r r :t :t :t :t\}, .1)),\
-                                          1),\
-                           ;; two possible values for 11-12\
-                           make-weighting(list(rancyc( \{:t r r :t :t r r :t\}, 1),\
-                                               rancyc( \{r r r r :t :t r :t\}, .1),\
-                                               rancyc( \{:c r :t :c :t r :t :t\}, .1),\
-                                               rancyc( \{r r :t :t r r :t :t\}, .1),\
-                                               rancyc( \{r r :t r r r :t r\}, .1)),\
-                                          1) ,\
-                           ;; two possible values for 13-15\
-                           make-weighting(list(rancyc( \{:t r r :t :t r r :t\}, 1),\
-                                               rancyc( \{r r r r :t :t r :c\}, .1),\
-                                               rancyc( \{:c r :t :t :t r :t :t\}, .1),\
-                                               rancyc( \{r r :t :t r r :t :t\}, .10),\
-                                               rancyc( \{r r :t r r r :t r\}, .10))))\
-)\
-                                         \
-                      \
-  repeat 8\
-  for x = next(bmap)\
-  for d = in-tempo( next(durs), tmpo)\
-  for a = next(amps)\
-  if (equal?(x, :t))\
-    set k = next(tonics)\
-  else \
-    if (equal?( x, :c))\
-      set k = next(colors)\
-    else \
-      set k = x\
-    end\
-  end\
-  if (number?(k))\
-    mp:midi(key: transpose( k, on), chan: 1, dur: d, amp: a * ampl)\
-  end\
-  wait rhy\
-end\
-\
-;bossa-bass3\
-process bossa-bass3 (jscale, on, tmpo, ampl)\
-  with k, rhy = in-tempo(1/2, tmpo),\
-       tonics = make-weighting(getset(jscale, \{0 2 4 4 7 \})),\
-       colors = make-weighting(getset(jscale, \{1 3 5 6 8 \})),\
-       amps = make-cycle(\{.5\}),\
-       durs = make-cycle(\{1 1/4\}) ,\
-       ;; beat map. t is tonic, c is color, r is rest\
-       bmap = make-cycle(\
-                         list(\
-                              ;; 5 possible patterns for triplets 1-4\
-                              make-weighting(list(rancyc( \{:t r r :t :t r r :t\}, 1),\
-                                                  rancyc( \{:t r r :t :t r r :t\}, .1),\
-                                                  rancyc( \{:t r :t :t r :t :t r\}, .1),\
-                                                  rancyc( \{:t :t :t :t :t r r r\}, .1),\
-                                                  rancyc( \{:t :t :t r :t r :t :t\}, .1)),\
-                                                1),\
-                           ;; 5 possible patterns for 5-7\
-                           make-weighting(list(rancyc( \{:t r r :t :t r r :t\}, 1)),\
-                                             \
-                                          1) ,\
-                           ;; 5 possible patterns for 8-10\
-                           make-weighting(list(rancyc( \{:t r r :t :t r r :t\}, 1),\
-                                               rancyc( \{:t :t :t r :t :t :c r\}, .1),\
-                                               rancyc( \{:t r r r :t r r r\}, .1),\
-                                               rancyc( \{:t :t :t r :t :t :t r\}, .1),\
-                                               rancyc( \{:t :t r r :t :t :t :t\}, .1)),\
-                                          1),\
-                           ;; two possible values for 11-12\
-                           make-weighting(list(rancyc( \{:t r r :t :t r r :t\}, 1),\
-                                               rancyc( \{r r r r :t :t r :t\}, .1),\
-                                               rancyc( \{:c r :t :c :t r :t :t\}, .1),\
-                                               rancyc( \{r r :t :t r r :t :t\}, .1),\
-                                               rancyc( \{r r :t r r r :t r\}, .1)),\
-                                          1) ,\
-                           ;; two possible values for 13-15\
-                           make-weighting(list(rancyc( \{:t r r :t :t r r :t\}, 1),\
-                                               rancyc( \{r r r r :t :t r :c\}, .1),\
-                                               rancyc( \{:c r :t :t :t r :t :t\}, .1),\
-                                               rancyc( \{r r :t :t r r :t :t\}, .10),\
-                                               rancyc( \{r r :t r r r :t r\}, .10))))\
-)\
-                                         \
-                      \
-  repeat 8\
-  for x = next(bmap)\
-  for d = in-tempo( next(durs), tmpo)\
-  for a = next(amps)\
-  if (equal?(x, :t))\
-    set k = next(tonics)\
-  else \
-    if (equal?( x, :c))\
-      set k = next(colors)\
-    else \
-      set k = x\
-    end\
-  end\
-  if (number?(k))\
-    mp:midi(key: transpose( k, on), chan: 1, dur: d, amp: a * ampl)\
-  end\
-  wait rhy\
-end\
-\
-;metal-bass1\
-process metal-bass (jscale, on, tmpo, ampl)\
-  with k, rhy = in-tempo(1/2, tmpo),\
-       tonics = make-weighting(getset(jscale, \{0 0 0 0 0 \})),\
-       colors = make-weighting(getset(jscale, \{1 3 5 6 8 \})),\
-       amps = make-cycle(\{1\}),\
-       durs = 1/2,\
-       ;; beat map. t is tonic, c is color, r is rest\
-       bmap = make-cycle(\
-                         list(\
-                              ;; 5 possible patterns for triplets 1-4\
-                              make-weighting(list(rancyc( \{:t :t :t :t :t :t :t :t\}, 1)),\
-                                                1),\
-                           ;; 5 possible patterns for 5-7\
-                           make-weighting(list(rancyc( \{:t :t :t :t :t :t :t :t\}, 1)),\
-                                             \
-                                          1) ,\
-                           ;; 5 possible patterns for 8-10\
-                           make-weighting(list(rancyc( \{:t :t :t :t :t :t :t :t\}, 1)),\
-                                          1),\
-                           ;; two possible values for 11-12\
-                           make-weighting(list(rancyc( \{:t :t :t :t :t :t :t :t\}, 1)),\
-                                          1) ,\
-                           ;; two possible values for 13-15\
-                           make-weighting(list(rancyc( \{:t :t :t :t :t :t :t :t\}, 1))))\
-                                  \
-)\
-                                         \
-                      \
-  repeat 16\
-  for x = next(bmap)\
-  for d = in-tempo( next(durs), tmpo)\
-  for a = next(amps)\
-  if (equal?(x, :t))\
-    set k = next(tonics)\
-  else \
-    if (equal?( x, :c))\
-      set k = next(colors)\
-    else \
-      set k = x\
-    end\
-  end\
-  if (number?(k))\
-    mp:midi(key: transpose( k, on), chan: 1, dur: d, amp: a * ampl)\
-  end\
-  wait rhy\
-end\
-\
-;metal-bass2\
-process metal-bass2 (jscale, on, tmpo, ampl)\
-  with k, rhy = in-tempo(1/2, tmpo),\
-       tonics = make-weighting(getset(jscale, \{0 0 0 0 0 \})),\
-       colors = make-weighting(getset(jscale, \{1 3 5 6 8 \})),\
-       amps = make-cycle(\{1\}),\
-       durs = 1/2 ,\
-       ;; beat map. t is tonic, c is color, r is rest\
-       bmap = make-cycle(\
-                         list(\
-                              ;; 5 possible patterns for triplets 1-4\
-                              make-weighting(list(rancyc( \{:t :t :t :t :t :t :t :t\}, 1)),\
-                                                1),\
-                           ;; 5 possible patterns for 5-7\
-                           make-weighting(list(rancyc( \{:t :t :t :t :t :t :t :t\}, 1)),\
-                                             \
-                                          1) ,\
-                           ;; 5 possible patterns for 8-10\
-                           make-weighting(list(rancyc( \{:t :t :t :t :t :t :t :t\}, 1)),\
-                                          1),\
-                           ;; two possible values for 11-12\
-                           make-weighting(list(rancyc( \{:t :t :t :t :t :t :t :t\}, 1)),\
-                                          1) ,\
-                           ;; two possible values for 13-15\
-                           make-weighting(list(rancyc( \{:t :t :t :t :t :t :t :t\}, 1))))\
-                                  \
-)\
-                                         \
-                      \
-  repeat 8\
-  for x = next(bmap)\
-  for d = in-tempo( next(durs), tmpo)\
-  for a = next(amps)\
-  if (equal?(x, :t))\
-    set k = next(tonics)\
-  else \
-    if (equal?( x, :c))\
-      set k = next(colors)\
-    else \
-      set k = x\
-    end\
-  end\
-  if (number?(k))\
-    mp:midi(key: transpose( k, on), chan: 1, dur: d, amp: a * ampl)\
-  end\
-  wait rhy\
-end\
-\
-;metal-bass3\
-process metal-bass3 (jscale, on, tmpo, ampl)\
-  with k, rhy = in-tempo(1/2, tmpo),\
-       tonics = make-weighting(getset(jscale, \{0 0 0 0 0 \})),\
-       colors = make-weighting(getset(jscale, \{1 3 5 6 8 \})),\
-       amps = make-cycle(\{1\}),\
-       durs = 1/2,\
-       ;; beat map. t is tonic, c is color, r is rest\
-       bmap = make-cycle(\
-                         list(\
-                               ;; 5 possible patterns for triplets 1-4\
-                              make-weighting(list(rancyc( \{:t :t :t :t :t :t :t :t\}, 1)),\
-                                                1),\
-                           ;; 5 possible patterns for 5-7\
-                           make-weighting(list(rancyc( \{:t :t :t :t :t :t :t :t\}, 1)),\
-                                             \
-                                          1) ,\
-                           ;; 5 possible patterns for 8-10\
-                           make-weighting(list(rancyc( \{:t :t :t :t :t :t :t :t\}, 1)),\
-                                          1),\
-                           ;; two possible values for 11-12\
-                           make-weighting(list(rancyc( \{:t :t :t :t :t :t :t :t\}, 1)),\
-                                          1) ,\
-                           ;; two possible values for 13-15\
-                           make-weighting(list(rancyc( \{:t :t :t :t :t :t :t :t\}, 1))))\
-                                  \
-)\
-                                         \
-                                  \
-  repeat 8\
-  for x = next(bmap)\
-  for d = in-tempo( next(durs), tmpo)\
-  for a = next(amps)\
-  if (equal?(x, :t))\
-    set k = next(tonics)\
-  else \
-    if (equal?( x, :c))\
-      set k = next(colors)\
-    else \
-      set k = x\
-    end\
-  end\
-  if (number?(k))\
-    mp:midi(key: transpose( k, on), chan: 1, dur: d, amp: a * ampl)\
-  end\
-  wait rhy\
-end\
-\
-; Again we will use the conductor process to sprout both iterations of this tune\
-\
-\
-; BOSSA track\
-process bossa-track (measures, changes, tempo, jscale)\
-  with roots = make-cycle(changes),\
-       ampl = 1\
-  for meas below measures\
-  for root = next(roots)\
-  if (0 =  meas % 12)\
-    set ampl = 1\
-  end\
-  sprout(clave-hihat(tempo, ampl))\
-  sprout(clave-bass(tempo,ampl))\
-  sprout(clave-hihat(tempo, ampl), 4)\
-  sprout(clave-bass(tempo,ampl), 4)\
-  sprout(clave-hihat(tempo, ampl), 8)\
-  sprout(clave-bass(tempo,ampl), 8)\
-  sprout(clave-hihat(tempo, ampl), 12)\
-  sprout(clave-bass(tempo, ampl), 12)\
-  sprout(bossa-rhythm(tempo, ampl))\
-  sprout(bossa-rhythm2(tempo, ampl), 4)\
-  sprout(bossa-rhythm3(tempo, ampl), 8)\
-  sprout(bossa-rhythm4(tempo, ampl), 10)\
-  sprout(bossa-rhythm(tempo, ampl), 12)\
-  sprout(bossa-bass(jscale, transpose(root, -12), tempo, ampl))\
-  sprout(bossa-bass(jscale, transpose(root, -10), tempo, ampl), 4)\
-  sprout(bossa-bass2(jscale, transpose(root, -10), tempo, ampl), 8)\
-  sprout(bossa-bass3(jscale, transpose(root, -11), tempo, ampl), 10)\
-  sprout(bossa-bass(jscale, transpose(root, -12), tempo, ampl), 12)\
-  sprout(bossa-melody1(tempo,ampl))\
-  sprout(bossa-melody2(tempo,ampl), 4)\
-  sprout(bossa-melody3(tempo,ampl), 8)\
-  sprout(bossa-melody4(tempo,ampl), 12)\
-  wait in-tempo(32, tempo)\
-end\
-\
-sprout(bossa-track( 32, bossa-changes, bossa-tempo, bossa-scale))\
-\
-stop()\
-\
-; METAL track\
-process metal-track (measures, changes, tempo, jscale)\
-  with roots = make-cycle(changes),\
-       ampl = 1\
-  for meas below measures\
-  for root = next(roots)\
-  if (0 =  meas % 12)\
-    set ampl = 1\
-  end\
-  sprout(straight-hihat(tempo, ampl))\
-  sprout(snare-bass(tempo,ampl))\
-  sprout(straight-hihat(tempo, ampl), 4)\
-  sprout(snare-bass(tempo,ampl), 4)\
-  sprout(straight-hihat(tempo, ampl), 8)\
-  sprout(snare-bass(tempo,ampl), 8)\
-  sprout(straight-hihat(tempo, ampl), 12)\
-  sprout(snare-bass(tempo, ampl), 12)\
-  sprout(straight-hihat(tempo, ampl), 16)\
-  sprout(snare-bass(tempo, ampl), 16)\
-  sprout(metal-bass(jscale, transpose(root, -12), tempo, ampl))\
-  sprout(metal-bass(jscale, transpose(root, -9), tempo, ampl), 4)\
-  sprout(metal-bass2(jscale, transpose(root, -5), tempo, ampl), 8)\
-  sprout(metal-bass3(jscale, transpose(root, -6), tempo, ampl), 10)\
-  sprout(metal-bass(jscale, transpose(root, -12), tempo, ampl), 12)\
-  sprout(metal-melody1(tempo,ampl))\
-  sprout(metal-melody2(tempo,ampl), 4)\
-  sprout(metal-melody3(tempo,ampl), 8)\
-  sprout(metal-melody4(tempo,ampl), 12)\
-  wait in-tempo(32, tempo)\
-end\
-\
-sprout(metal-track( 32, doom-changes, doom-tempo, doom-scale))\
-\
-\
-stop()\
-\
-; BOSSA solo track\
-process bossa-solo-track(measures, changes, tempo, jscale)\
-  with roots = make-cycle(changes),\
-       ampl = 1\
-  for meas below measures\
-  for root = next(roots)\
-  if (0 =  meas % 12)\
-    set ampl = 1\
-  end\
-  sprout(clave-hihat(tempo, ampl))\
-  sprout(clave-bass(tempo,ampl))\
-  sprout(clave-hihat(tempo, ampl), 4)\
-  sprout(clave-bass(tempo,ampl), 4)\
-  sprout(clave-hihat(tempo, ampl), 8)\
-  sprout(clave-bass(tempo,ampl), 8)\
-  sprout(clave-hihat(tempo, ampl), 12)\
-  sprout(clave-bass(tempo, ampl), 12)\
-  sprout(bossa-rhythm(tempo, ampl))\
-  sprout(bossa-rhythm2(tempo, ampl), 4)\
-  sprout(bossa-rhythm3(tempo, ampl), 8)\
-  sprout(bossa-rhythm4(tempo, ampl), 10)\
-  sprout(bossa-rhythm(tempo, ampl), 12)\
-  sprout(bossa-bass(jscale, transpose(root, -12), tempo, ampl))\
-  sprout(bossa-bass(jscale, transpose(root, -10), tempo, ampl), 4)\
-  sprout(bossa-bass2(jscale, transpose(root, -10), tempo, ampl), 8)\
-  sprout(bossa-bass3(jscale, transpose(root, -11), tempo, ampl), 10)\
-  sprout(bossa-bass(jscale, transpose(root, -12), tempo, ampl), 12)\
-  sprout(bossa-soloing(tempo,ampl), 17)\
-  wait in-tempo(32, tempo)\
-end\
-\
-sprout(bossa-solo-track( 32, bossa-changes, bossa-tempo, bossa-scale))\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-; The last 3 use elements of the first two examples to create \
-; some non-specific styles of music\
-\
-\
-;; Minimalism ala Laurie Spiegel\
-\
-;SPIEGEL ARP\
-process spiegel-arp (jscale, on, tmpo, ampl)\
-  with k, rhy = in-tempo(1/4, tmpo),\
-       tonics = make-weighting(getset(jscale, \{0 2 4 6 7\})),\
-       colors = make-weighting(getset(jscale, \{1 3 5 6 8\})),\
-       amps = make-cycle(\{.5\}),\
-       durs = make-cycle(\{1/8 1/8 1/8\}) ,\
-       ;; beat map. t is tonic, c is color, r is rest\
-       bmap = make-cycle(\
-                         list(\
-                              ;; 5 possible patterns for triplets 1-4\
-                              make-weighting(list(rancyc( \{:t r r r :t :t r r\}, .20),\
-                                                  rancyc( \{:t r r :t :t r r :c\}, .20),\
-                                                  rancyc( \{:t r :t :t r :t :t r\}, .20),\
-                                                  rancyc( \{:t :c :t :c :t r r r\}, .20),\
-                                                  rancyc( \{:t :c :t r :t r :c :c\}, .20)),\
-                                                1),\
-                           ;; 5 possible patterns for 5-7\
-                           make-weighting(list(rancyc( \{r r :t r :t :t r :c\}, .20),\
-                                               rancyc( \{r r r r :t :c r :c\}, .20),\
-                                               rancyc( \{:c r :t :c :c r :t :t\}, .20),\
-                                               rancyc( \{r r :t :t r r :t :t\}, .20),\
-                                               rancyc( \{r r :c r r r :c r\}, .20)),\
-                                          1) ,\
-                           ;; 5 possible patterns for 8-10\
-                           make-weighting(list(rancyc( \{:t r :c r :t r :c r\}, .20),\
-                                               rancyc( \{:t :t :c r :t :t :c r\}, .20),\
-                                               rancyc( \{:t r r r :t r r r\}, .20),\
-                                               rancyc( \{:t :t :c r :t :t :c r\}, .20),\
-                                               rancyc( \{:t :t r r :t :t :c :t\}, .20)),\
-                                          1),\
-                           ;; two possible values for 11-12\
-                           make-weighting(list(rancyc( \{r r :t r :t :t r :c\}, .20),\
-                                               rancyc( \{r r r r :t :c r :c\}, .20),\
-                                               rancyc( \{:c r :t :c :c r :t :t\}, .20),\
-                                               rancyc( \{r r :t :t r r :t :t\}, .20),\
-                                               rancyc( \{r r :c r r r :c r\}, .20)),\
-                                          1) ,\
-                           ;; two possible values for 13-15\
-                           make-weighting(list(rancyc( \{r r :t r :t :t r :c\}, .20),\
-                                               rancyc( \{r r r r :t :c r :c\}, .20),\
-                                               rancyc( \{:c r :t :c :c r :t :t\}, .20),\
-                                               rancyc( \{r r :t :t r r :t :t\}, .20),\
-                                               rancyc( \{r r :c r r r :c r\}, .20))))\
-)\
-                                         \
-                      \
-  repeat 16\
-  for x = next(bmap)\
-  for d = in-tempo( next(durs), tmpo)\
-  for a = next(amps)\
-  if (equal?(x, :t))\
-    set k = next(tonics)\
-  else \
-    if (equal?( x, :c))\
-      set k = next(colors)\
-    else \
-      set k = x\
-    end\
-  end\
-  if (number?(k))\
-    mp:midi(key: transpose( k, on), chan: 7, dur: d, amp: a * ampl)\
-    mp:midi(key: transpose( k + 7, on), chan: 7, dur: d, amp: a * ampl)\
-\
-  end\
-  wait rhy\
-end\
-\
-\
-; Using the piano rhythm from the "automatic jazz" example but switched to \
-; simple time instead of compound\
-\
-process 4-piano (jscale, on, tmpo, ampl)\
-  ;; generate a measure of jazz harmony.\
-  ;; measure contains either 8 or 12 notes.\
-  with reps = odds(.5, 2, 4),\
-       rhys = #? ((reps = 2), make-cycle(\{2 1\}), make-cycle(\{1/4\})) ,\
-       amps = #? ((reps = 4), make-weighting(list(make-cycle(\{.7 .6 .5 .4\}),\
-                                                  make-cycle(\{.5 .4 .3 .4\}))),\
-                              make-weighting(list(make-cycle(\{.8 .7 .6 .5\}),\
-                                                  make-cycle(\{.7 .7 .7 .7\})))),\
-       knms = make-weighting(list(list(make-heap(jscale, make-weighting(\{1 2 3 4\})),\
-                                       make-weighting(\{1.15 1.65\})),\
-                                  "rest"))\
-  repeat reps\
-  for r = in-tempo(next(rhys), tmpo)\
-  for a = next(amps)\
-  for l = next(knms, #t)\
-  loop for k in l\
-    if (number?(k))\
-      mp:midi(key: transpose(k, on), dur: r, amp: a * ampl, chan: 1)\
-    end\
-  end\
-  wait r\
-end\
-\
-; and a piano which uses compound time\
-process 6-piano (jscale, on, tmpo, ampl)\
-  with reps = odds(.5, 8, 4),\
-       rhys = #? ((reps = 3), make-cycle(\{2/3 1/3\}), make-cycle(\{1/2\})) ,\
-       amps = #? ((reps = 2), make-weighting(list(make-cycle(\{.3 .3 .3 .3\}),\
-                                                  make-cycle(\{.3 .3 .3 .3\}))),\
-                              make-weighting(list(make-cycle(\{.3 .3 .3 .3\}),\
-                                                  make-cycle(\{.3 .3 .3 .3\})))),\
-       knms = make-weighting(list(list(make-heap(jscale, make-weighting(\{1 2 3 4\})),\
-                                       make-weighting(\{1.15 1.65\})),\
-                                  "rest"))\
-  repeat reps\
-  for r = in-tempo(next(rhys), tmpo)\
-  for a = next(amps)\
-  for l = next(knms, #t)\
-  loop for k in l\
-    if (number?(k))\
-      mp:midi(key: transpose(k, on), dur: r, amp: a * ampl, chan: 0)\
-    end\
-  end\
-  wait r\
-end\
-\
-\
-\
-; SPIEGEL track\
-process spiegel-track (measures, changes, tempo, jscale)\
-  with roots = make-cycle(changes),\
-       ampl = 1\
-  for meas below measures\
-  for root = next(roots)\
-  if (0 =  meas % 12)\
-    set ampl = 1\
-  end\
-  sprout(4-piano(jscale, root, tempo, ampl))\
-  sprout(6-piano(jscale, root, tempo, ampl))\
-  sprout(simple-bass(jscale, transpose(root, -24), tempo, ampl))\
-  sprout(spiegel-arp(jscale, transpose(root, -12), tempo, ampl))\
-  sprout(spiegel-arp(jscale, transpose(root, 0), tempo, ampl), 1.5)\
-  sprout(spiegel-arp(jscale, transpose(root, 0), tempo, ampl), .20)\
-  sprout(spiegel-arp(jscale, transpose(root, +12), tempo, ampl), 3)\
-  sprout(spiegel-arp(jscale, transpose(root, +12), tempo, ampl), 4.5)\
- wait in-tempo(4, tempo)\
-end\
-\
-sprout(spiegel-track(32, spiegel-changes, spiegel-tempo, spiegel-scale))\
-\
-\
-stop()\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-; The original intent of this project was to create a text based adventure\
-; game with soundtracks so I've included a two of the loops\
-\
-;WATER ARP\
-process water-arp (tmpo, ampl)\
-  with rhy = in-tempo(1/8, tmpo),\
-       dur = in-tempo(1/8, tmpo),\
-       amp = .40,\
-       pat = make-cycle(water-notes)\
-  repeat 32\
-  for x = next(pat)\
-  if (number?(x))\
-  mp:midi(key: next(pat), chan: 3, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-process water-arp2 (tmpo, ampl)\
-  with rhy = in-tempo(1/12, tmpo),\
-       dur = in-tempo(1/8, tmpo),\
-       amp = .40,\
-       pat = make-heap(water-notes)\
-  repeat 32\
-  for x = next(pat)\
-  if (number?(x))\
-  mp:midi(key: next(pat), chan: 3, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end \
-\
-;Drum FILLS\
-process fills (tmpo, ampl)\
-  with rhy = in-tempo(1/4, tmpo),\
-       dur = in-tempo( 1, tmpo),\
-       amp = .3,\
-       pat = make-cycle(\{0 0 0 0 0 0 0 0 41 43 45 35 47 48 50 53\})\
-  repeat 16\
-  for x = next(pat)\
-  if (number?(x))\
-    mp:midi(key: x, chan: 9, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-\
-;WATER TRACK\
-process water-track (measures, changes, tempo, jscale)\
-  with roots = make-cycle(changes),\
-       ampl = 1\
-  for meas below measures\
-  for root = next(roots)\
-  if (0 =  meas % 12)\
-    set ampl = 1\
-  end\
-  sprout(4-piano(jscale, root, tempo, ampl))\
-  sprout(straight-hihat(tempo, ampl))\
-  sprout(snare-bass(tempo,ampl))\
-  sprout(simple-bass(jscale, transpose(root, -36), tempo, ampl))\
-  sprout(fills(tempo, ampl))\
-  sprout(water-arp(tempo, ampl))\
-  sprout(water-arp2(tempo, ampl), .5)\
-  wait in-tempo(4, tempo)\
-end\
-\
-sprout(water-track( 8, water-changes, jazz-tempo, water-scale))\
-\
-stop()\
-\
-\
-\
-\
-\
-\
-;MORNING ARP\
-process morning-arp (tmpo, ampl)\
-  with rhy = in-tempo(3/2, tmpo),\
-       dur = in-tempo(1/4, tmpo),\
-       amp = odds (.5, .4, .2),\
-       pat = make-cycle(\{67 64 62 60 60 64\})\
-  repeat 6\
-  for x = next(pat)\
-  if (number?(x))\
-  mp:midi(key: next(pat), chan: 8, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-\
-;6 piano (compound time)\
-process 6-piano (jscale, on, tmpo, ampl)\
-  ;; generate a measure of jazz harmony.\
-  ;; measure contains either 8 or 12 notes.\
-  with reps = odds(.5, 8, 4),\
-       rhys = #? ((reps = 3), make-cycle(\{2/3 1/3\}), make-cycle(\{1/2\})) ,\
-       amps = #? ((reps = 2), make-weighting(list(make-cycle(\{.3 .3 .3 .3\}),\
-                                                  make-cycle(\{.3 .3 .3 .3\}))),\
-                              make-weighting(list(make-cycle(\{.3 .3 .3 .3\}),\
-                                                  make-cycle(\{.3 .3 .3 .3\})))),\
-       knms = make-weighting(list(list(make-heap(jscale, make-weighting(\{1 2 3 4\})),\
-                                       make-weighting(\{1.15 1.65\})),\
-                                  "rest"))\
-  repeat reps\
-  for r = in-tempo(next(rhys), tmpo)\
-  for a = next(amps)\
-  for l = next(knms, #t)\
-  loop for k in l\
-    if (number?(k))\
-      mp:midi(key: transpose(k, on), dur: r, amp: a * ampl, chan: 0)\
-    end\
-  end\
-  wait r\
-end\
-\
-;hi-hat in 6/8\
-process compound-drums (tmpo, ampl)\
-  with rhy = in-tempo(1/3, tmpo),\
-       dur = in-tempo( 1/3, tmpo),\
-       amp = .5,\
-       pat = make-cycle(\{42 42 42 42 42 42\})\
-  repeat 12\
-  for x = next(pat)\
-  if (number?(x))\
-    mp:midi(key: x, chan: 9, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-;Perussive elements in 6/8\
-process compound-fills (tmpo, ampl)\
-  ;; generate a 6/8 measure of high-hat:\
-  ;;   rest hihat rest hihat\
-  with rhy = in-tempo(1/6, tmpo),\
-       dur = in-tempo( 1/3, tmpo),\
-       amp = .5,\
-       pat = make-heap(\{54 0 51 0 67 0 0 68 0 0 0 51 0\})\
-  repeat 12\
-  for x = next(pat)\
-  if (number?(x))\
-    mp:midi(key: x, chan: 9, dur: dur, amp: amp * ampl)\
-  end\
-  wait rhy\
-end\
-\
-\
-;MORNING TRACK (an attempt at utilizing 90 bpm)\
-process morning-track (measures, changes, tempo, jscale)\
-  with roots = make-cycle(changes),\
-       ampl = 1\
-  for meas below measures\
-  for root = next(roots)\
-  if (0 =  meas % 12)\
-    set ampl = 1\
-  end\
-  sprout(6-piano(jscale, root, tempo, ampl))\
-  sprout(6-piano(jscale, root, tempo, ampl), 3)\
-  sprout(compound-hihat(tempo, ampl))\
-  sprout(compound-fills(tempo,ampl), 5.333)\
-  sprout(snare-bass(tempo,ampl))\
-  sprout(compound-bass(jscale, transpose(root, -24), tempo, ampl))\
-  sprout(morning-arp(tempo, ampl))\
-  wait in-tempo(4, tempo)\
-end\
-\
-sprout(morning-track( 8, morning-changes, morning-tempo, morning-scale))\
-\
-\
-stop()\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-\
-}
+;;; -*- syntax: Sal; font-size: 16; line-numbers: no; -*-
+;; Genre Generator 
+
+
+
+
+; General algorhythmic and nonalgorhthmic attempts at creating portraying
+; differing styles of music. 
+
+; Our first step is to specify our channels. Since we touch on different
+; genres, we will be using all 10 channels. Of course, we will designate
+; channel 9 to our Percussion channel.
+
+; Channel  0: Feedback Guitar
+; Channel  1: Bass 
+; Channel  2: Music Box
+; Channel  3: Pan Flute
+; Channel  4: Orchestra Hit 
+; Channel  5: Gunshot (used w 808 snare drum)
+; Channel  6: Polysynth (used w 808 bass drum)
+; CHannel  7: soundtrack
+; Channel  8: Telephone
+; Channel  9: Percussion
+
+begin
+  with piano = 29, bass = 33, crystal = 90, panflute = 75, orchhit = 55, 
+gun = 127, polysynth = 90, soundtrack = 79, phone = 124
+  mp:instruments(piano, bass, crystal, panflute, orchhit, gun, polysynth, soundtrack, phone)
+end
+
+
+;https://static1.squarespace.com/static/55cbdf4fe4b0989acda7322c/t/562ea50de4b02fc24802f1f0/1445897485726/General%2BMIDI%2BPatch%2BList.pdf
+;the link above contains all MIDI programming information, but MAKE SURE
+; to reduce each value by 1 as Grace operates from 0-127
+
+; Now we will set all of our Scale, Changes, tempo, and sequenctial melodic
+; information in one place:
+
+variable water-scale = {0 4 6 11 12 14 16 23 26},
+         water-changes = keynum({c4 g4 d4 g4 c4 g4 d4 g4}),
+         water-tempo = 60,
+         water-notes = keynum({c4 d4 e4 fs4 b4 d5 c6 d6 fs6 b6 d7 c7 d8 fs8 b8 d8})
+
+variable morning-scale = {0 2 4 7 9 12 14 16 19},
+         morning-changes = keynum({bf3 bf3 bf3 c3 f3 f3 c3 g3}),
+         morning-tempo = 90,
+         morning-notes = keynum({bf5 g5 f5 ef5 f5 g5 bf5 g5 f5 ef5 f5 g5 bf5 g5 bf5 c6 g5 c6 bf5 g5 f5 ef5 ef5 ef5})
+        
+variable doom-scale = {0 2 3 7 9 10 12 14 15},
+         doom-changes = keynum({df3}),
+         doom-tempo = 120
+
+variable bossa-scale = {0 4 7 11 12 16 29 24 30},
+         bossa-changes = keynum({e2 e2 e2 e2 e2 e2 e2 e2 e2 e2 e2 e2 e2 e2}),
+         bossa-tempo = 120
+                                 
+                                 
+variable spiegel-scale = {0 7 9 12 14 19 21 24 26},
+         spiegel-changes = keynum({e3 e3 b3 e3 e3 b3 e3 b3 fs4 df4 fs4 e3 e3 fs4 df4 a3 df3 e3 e3 e3}),
+         spiegel-tempo = 80,
+         spiegel-notes = keynum({e3 e3 b3 b3 b3 e3 b3 b3 b3 b3 fs4 fs4 fs4 b4 b4 b4 b4 b4 b4 b4 b4})
+
+variable 808-scale = {35 42 42 42 42 42 42 42 42},
+         808-changes = {0},
+         808-tempo = 60
+
+variable beat-scale = {0 0 3 3 7 7 10 10 12},
+         beat-changes = keynum({c2 c2 g1 ef3 c2 c2 ef2 g1}),
+         beat-tempo = 60
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+; We will now prepare processes to generate both algorhytmic
+; and sequenced elements to create a modern style trap beat
+
+;; The 808-beat-process
+
+; First the sequenced elements
+
+;808 Snare
+process 808-snare (tmpo, ampl)
+ with rhy = in-tempo(1, tmpo),
+      dur = in-tempo( 1, tmpo),
+      amp = 1,
+      pat = make-cycle({"rest" 37 "rest" 37 "rest" 37 "rest" 37})
+  repeat 4
+  for x = next(pat)
+  if (number?(x))
+    mp:midi(key: x, chan: 9, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+;808 Snare2 (gunshot sample)
+process 808-snare2 (tmpo, ampl)
+ with rhy = in-tempo(1, tmpo),
+      dur = in-tempo( 1/4, tmpo),
+      amp = .8,
+      pat = make-cycle({"rest" 97 "rest" 97 "rest" 97 "rest" 97})
+  repeat 4
+  for x = next(pat)
+  if (number?(x))
+    mp:midi(key: x, chan: 5, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+;808-BD (low bass, unfortunately has hum)
+process 808-BD (tmpo, ampl)
+  with rhy = in-tempo(1/2, tmpo),
+       dur = in-tempo(1, tmpo),
+       amp = 1,
+       pat = make-cycle({24 "rest" "rest" 24 "rest" "rest" "rest" "rest" "rest"})
+  repeat 16
+  for x = next(pat)
+  if (number?(x))
+  mp:midi(key: x, chan: 1, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+;808-organ
+process 808-organ (tmpo, ampl)
+  with rhy = in-tempo(1/8, tmpo),
+       dur = in-tempo(1/12, tmpo),
+       amp = .5,
+       pat = make-cycle({60 "rest" "rest"  "rest" 67 "rest" "rest" "rest" 72 "rest" "rest" "rest" 67 "rest" "rest" "rest" })
+  repeat 32
+  for x = next(pat)
+  if (number?(x))
+  mp:midi(key: x, chan: 7, dur: dur, amp: amp * ampl)
+  mp:midi(key: x + 3, chan: 7, dur: dur, amp: amp * ampl)
+  mp:midi(key: x + 7, chan: 7, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+; The arp is randomly generated from 16 notes of a chromatic scale
+;808-arp
+process 808-arp (tmpo, ampl)
+  with rhy = in-tempo(1/8, tmpo),
+       dur = in-tempo(1/32, tmpo),
+       amp = .5,
+       pat = make-heap({60 59 58 57 56 55 54 53 61 62 63 64 65 67 68 69})
+  repeat 32
+  for x = next(pat)
+  if (number?(x))
+  mp:midi(key: next(pat), chan: 8, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+; The hi-hat and Bass drum are algorhythmically generated based on odds. 
+; This algorhythm is based on the jazz-bass seting from the "Automatic Jazz"
+; example we saw in class:
+
+process 808-hats (jscale, on, tmpo, ampl)
+  with k, rhy = in-tempo(1/16, tmpo),
+       tonics = make-weighting(getset(jscale, {1 1 1 1 1})),
+       colors = make-weighting(getset(jscale, {0 0 0 0 0})),
+       amps = 1,
+       durs = make-cycle({1/8 1/8 1/8}) ,
+       ;; beat map. t is tonic, c is color, r is rest
+       bmap = make-cycle(
+                         list(
+          ;; "stuttered" hats pattern 50%
+          ;; triplet patterm                    
+                              make-weighting(list(rancyc( {:c r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t r r r}, .5),
+                                                  rancyc( {:t r r r :t r r r :t r r r :t r r r :t r r :t r r :t r r :t r r :t r r :t}, .1),
+                                                  rancyc( {:t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t :t :t :t}, .1),
+                                                  rancyc( {:t r r :t r r :t r r :t r r :t r r :t :t r r r :t r r r :t r r r :t r r r}, .1),
+                                                  rancyc( {:t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :c r r r :t r r r}, .1),
+                                                  rancyc( {:t r r r :t r :t r :t r r r :t :t :t :t :t r r :t r r :t r r :t r r :t r r :t}, .1),
+                                                  rancyc( {:t r r r :t r r r :t r :t r r r :t r :t :t :t :t :t r r r :t r r r :t r r r}, .1),
+                                                  rancyc( {:t :t :t :t :t r r r :t r :t r :t r r r :t r r r :t r r r :t r r r :t r r r}, .1),
+                                                  rancyc( {:t r r r :t r r r :t r r r :t r r r r r r r r r r r :c r r r r r r r}, .1),
+                                                  rancyc( {:t r r r :t r r r :c r r r :t r r r :t r r r :t r r r :t r :c r :t r r r}, .1)),
+                                                 
+                                                1),
+
+                                                  make-weighting(list(rancyc( {:t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t :t :t :t}, .5),
+                                                  rancyc( {:t r r :t r r :t r r :t r r :t r r :t r r :t r r :t r r :t r r :t r r :t r}, .1),
+                                                  rancyc( {:t r r r :t r r r :t r r r :t r r r}, .1)),
+                                                 
+                                                1),
+
+                                                  make-weighting(list(rancyc( {:t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t :t :t :t}, .5),
+                                                  rancyc( {:t r r :t r r :t r r :t r r :t r r :t r r :t r r :t r r :t r r :t r r :t r}, .1),
+                                                  rancyc( {:t r r r :t r r r :t r r r :t r r r}, .1)),
+                                                 
+                                                1),
+                                             
+                 
+
+                           ;; two possible values for 12
+                                                  make-weighting(list(rancyc( {:t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t r r r :t :t :t :t}, 1),
+                                               rancyc( {r r :t :t}, .25))))
+                      )
+                                         
+                      
+  repeat 32
+  for x = next(bmap)
+  for d = in-tempo( next(durs), tmpo)
+  for a = next(amps)
+  if (equal?(x, :t))
+    set k = next(tonics)
+  else 
+    if (equal?( x, :c))
+      set k = next(colors)
+    else 
+      set k = x
+    end
+  end
+  if (number?(k))
+    mp:midi(key: transpose( k, on), chan: 9, dur: d, amp: a * ampl)
+
+  end
+  wait rhy
+end
+
+; Using "Automatic Jazz's conductor function , we seperately process
+; the drum set, the melodic elements and the bass
+
+
+
+;808 melodic:
+process 808-melody (measures, changes, tempo, jscale)
+  with roots = make-cycle(changes),
+       ampl = 1
+  for meas below measures
+  for root = next(roots)
+  if (0 =  meas % 12)
+    set ampl = 1
+  end
+  sprout(808-arp(tempo,ampl))
+  sprout(808-organ(tempo,ampl))
+  wait in-tempo(4, tempo)
+end
+
+; 808 bass
+
+process 808-bass (measures, changes, tempo, jscale)
+  with roots = make-cycle(changes),
+       ampl = 1
+  for meas below measures
+  for root = next(roots)
+  if (0 =  meas % 12)
+    set ampl = 1
+  end
+  sprout(808-BD(tempo, ampl))
+  wait in-tempo(16, tempo)
+end
+
+
+;808-beat track
+process 808-beat (measures, changes, tempo, jscale)
+  with roots = make-cycle(changes),
+       ampl = 1
+  for meas below measures
+  for root = next(roots)
+  if (0 =  meas % 12)
+    set ampl = 1
+  end
+  sprout(808-BD(tempo, ampl), 4)
+  sprout(808-hats(jscale, root, tempo, ampl))
+  sprout(808-snare(tempo, ampl), 4)
+  sprout(808-snare2(tempo, ampl), 4)
+  wait in-tempo(2, tempo)
+end
+
+; sprouting 3 different process' to separate algorhythmic rhythms from 
+; sequenced elements. Seperate sequencing also lends itself well to 
+; arrangement of pieces
+
+sprout(list(808-beat( 16, 808-changes, 808-tempo, 808-scale), 
+808-melody(8, beat-changes, beat-tempo, beat-scale), 
+808-bass(4, beat-changes, beat-tempo, beat-scale)), 
+{4 0 8})
+
+;stop quits the program
+stop()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+; Now we will share elements and process with a few deliniations to 
+; blend two different styles of music with the same melody
+
+;; The Nu-Bossa-process
+
+; First the rhythmic sequences:
+
+;Straight HIHAT
+process straight-hihat (tmpo, ampl)
+  with rhy = in-tempo(1/2, tmpo),
+       dur = in-tempo( 1/3, tmpo),
+       amp = 1,
+       pat = make-cycle({42 42 42 42 42 42 42 42 42 42 42 42 42 42 42 42})
+  repeat 32
+  for x = next(pat)
+  if (number?(x))
+    mp:midi(key: x, chan: 9, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+;Straight SNARE/BASS
+process straight-snare-bass (tmpo, ampl)
+  with rhy = in-tempo(1/4, tmpo),
+       dur = in-tempo( 1, tmpo),
+       amp = .8,
+       pat = make-cycle({35 "rest" "rest" "rest" 40 "rest" 35 "rest" 35 "rest" "rest" "rest" 40 "rest" "rest" "rest" 35 "rest" "rest" "rest" 40 "rest" 35 "rest" 35 "rest" 35 "rest" 40 "rest" "rest" "rest"})
+  repeat 32
+  for x = next(pat)
+  if (number?(x))
+    mp:midi(key: x, chan: 9, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+;Bossa HIHAT
+process bossa-hihat (tmpo, ampl)
+  with rhy = in-tempo(1/2, tmpo),
+       dur = in-tempo( 1, tmpo),
+       amp = .5,
+       pat = make-cycle({42 "rest" 42 42 42 "rest" 42 42 42 "rest" 42 42 42 "rest" 42 42 })
+  repeat 16
+  for x = next(pat)
+  if (number?(x))
+    mp:midi(key: x, chan: 9, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+;Bossa SNARE/BASS
+process bossa-snare-bass (tmpo, ampl)
+  with rhy = in-tempo(1/2, tmpo),
+       dur = in-tempo( 1, tmpo),
+       amp = .7,
+       pat = make-cycle({35 "rest" 37 35 35 37 "rest" 35 37 "rest" "rest" 37 35 "rest" 37 "rest"})
+  repeat 16
+  for x = next(pat)
+  if (number?(x))
+    mp:midi(key: x, chan: 9, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+;Bossa RHYTHM
+
+process bossa-rhythm (tmpo, ampl)
+  with rhy = in-tempo(1/2, tmpo),
+       dur = in-tempo(1/2, tmpo),
+       amp = .3,
+       pat = make-cycle({64 "rest" 64  "rest" "rest" 64 "rest" 64 "rest" 64 "rest" "rest" 64 "rest" 64 "rest" })
+  repeat 16
+  for x = next(pat)
+  if (number?(x))
+  mp:midi(key: x, chan: 6, dur: dur, amp: amp * ampl)
+  mp:midi(key: x + 11, chan: 6, dur: dur, amp: amp * ampl)
+  mp:midi(key: x + 4, chan: 6, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+process bossa-rhythm2 (tmpo, ampl)
+  with rhy = in-tempo(1/2, tmpo),
+       dur = in-tempo(1/2, tmpo),
+       amp = .3,
+       pat = make-cycle({66 "rest" 66  "rest" "rest" 66 "rest" 66 "rest" 66 "rest" "rest" 66 "rest" 66 "rest" })
+  repeat 16
+  for x = next(pat)
+  if (number?(x))
+  mp:midi(key: x, chan: 6, dur: dur, amp: amp * ampl)
+  mp:midi(key: x + 4, chan: 6, dur: dur, amp: amp * ampl)
+  mp:midi(key: x + 10, chan: 6, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+process bossa-rhythm3 (tmpo, ampl)
+  with rhy = in-tempo(1/2, tmpo),
+       dur = in-tempo(1/2, tmpo),
+       amp = .3,
+       pat = make-cycle({66 "rest" 66  "rest" "rest" 66 "rest" 66 "rest" 66 "rest" "rest" 66 "rest" 66 "rest" })
+  repeat 8
+  for x = next(pat)
+  if (number?(x))
+  mp:midi(key: x, chan: 6, dur: dur, amp: amp * ampl)
+  mp:midi(key: x + 3, chan: 6, dur: dur, amp: amp * ampl)
+  mp:midi(key: x + 10, chan: 6, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+process bossa-rhythm4 (tmpo, ampl)
+  with rhy = in-tempo(1/2, tmpo),
+       dur = in-tempo(1/2, tmpo),
+       amp = .3,
+       pat = make-cycle({"rest" 65 "rest"  "rest" 65 "rest" "rest" 65 "rest" 65 "rest" "rest" 65 "rest" 65 "rest" })
+  repeat 8
+  for x = next(pat)
+  if (number?(x))
+  mp:midi(key: x, chan: 6, dur: dur, amp: amp * ampl)
+  mp:midi(key: x + 4, chan: 6, dur: dur, amp: amp * ampl)
+  mp:midi(key: x + 11, chan: 6, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+; Next, the melodies are divided in to 4 processes in so they can be 
+; manipulated individually
+
+;BOSSA melody pt 1
+process bossa-melody1 (tmpo, ampl)
+  with rhy = in-tempo(1/2, tmpo),
+       dur = in-tempo( 1/2, tmpo),
+       amp = .5,
+       pat = make-cycle({78 "rest" "rest" 75 75 73 "rest" 78 "rest" "rest" 75 75 "rest" 75 73 78})
+  repeat 16
+  for x = next(pat)
+  if (number?(x))
+    mp:midi(key: x, chan: 3, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+;BOSSA melody pt 2
+process bossa-melody2 (tmpo, ampl)
+  with rhy = in-tempo(1/2, tmpo),
+       dur = in-tempo( 1/2, tmpo),
+       amp = .5,
+       pat = make-cycle({"rest" "rest" 75 "rest" 75 "rest" 73 78 "rest" 78 75 75 "rest" 75 73 76})
+  repeat 16
+  for x = next(pat)
+  if (number?(x))
+    mp:midi(key: x, chan: 3, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+;BOSSA melody pt 3
+process bossa-melody3 (tmpo, ampl)
+  with rhy = in-tempo(1/2, tmpo),
+       dur = in-tempo( 1/2, tmpo),
+       amp = .5,
+       pat = make-cycle({"rest" 76 "rest" 73 "rest" 73 71 75 "rest" "rest" "rest" 71 "rest" 71 69 "rest" })
+  repeat 16
+  for x = next(pat)
+  if (number?(x))
+    mp:midi(key: x, chan: 3, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+;BOSSA melody pt 4
+process bossa-melody4 (tmpo, ampl)
+  with rhy = in-tempo(1/2, tmpo),
+       dur = in-tempo( 3.5, tmpo),
+       amp = .5,
+       pat = make-cycle({"rest" "rest" 71 "rest" "rest" 0 "rest" "rest"  "rest"  "rest" "rest" "rest" "rest"})
+  repeat 8
+  for x = next(pat)
+  if (number?(x)) 
+        mp:midi(key: x, chan: 3, dur: dur, amp: amp * ampl)
+      end
+     wait rhy
+end
+
+;METAL melody pt 1
+process metal-melody1 (tmpo, ampl)
+  with rhy = in-tempo(1/2, tmpo),
+       dur = in-tempo( 3/4, tmpo),
+       amp = 1,
+       pat = make-cycle({66 "rest" "rest" 63 63 61 "rest" 66 "rest" "rest" 63 63 "rest" 63 61 66})
+  repeat 16
+  for x = next(pat)
+  if (number?(x))
+    mp:midi(key: x, chan: 0, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+;METAL melody pt 2
+process metal-melody2 (tmpo, ampl)
+  with rhy = in-tempo(1/2, tmpo),
+       dur = in-tempo( 3/4, tmpo),
+       amp = 1,
+       pat = make-cycle({"rest" "rest" 63 "rest" 63 "rest" 61 66 "rest" 66 63 63 "rest" 63 61 64})
+  repeat 16
+  for x = next(pat)
+  if (number?(x))
+    mp:midi(key: x, chan: 0, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+;METAL melody pt 3
+process metal-melody3 (tmpo, ampl)
+  with rhy = in-tempo(1/2, tmpo),
+       dur = in-tempo( 3/4, tmpo),
+       amp = 1,
+       pat = make-cycle({"rest" 64 "rest" 61 "rest" 61 59 63 "rest" "rest" "rest" 59 "rest" 59 57 "rest"  })
+  repeat 16
+  for x = next(pat)
+  if (number?(x))
+    mp:midi(key: x, chan: 0, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+;METAL melody pt 4
+process metal-melody4 (tmpo, ampl)
+  with rhy = in-tempo(1/2, tmpo),
+       dur = in-tempo( 6, tmpo),
+       amp = 1,
+       pat = make-cycle({"rest" "rest" 59 "rest" "rest" "rest" "rest" "rest"  "rest"  "rest" "rest" "rest" "rest"})
+  repeat 8
+  for x = next(pat)
+  if (number?(x)) 
+        mp:midi(key: x, chan: 0, dur: dur, amp: amp * ampl)
+      end
+     wait rhy
+end
+
+
+; Soling process. This is based off of the ride cymbal function in 
+;"Automatic Jazz" which creates a soloing pan flute playing either 8th
+; note triplets or straight 16ths, with rests intermittently as 
+; straight 16ths with no breaks is a cardinaljazz sin
+
+
+
+function or12r (wt)
+
+  with ridecymb1 = make-heap({52 78 75 73 71 84 85}), 
+  ridecymb2 = make-heap({60 74 75 76 78 80 82 82 84}),
+       restitem = list("rest", wt), 
+       ride1 = make-weighting(list(ridecymb1, restitem), 1),
+       ride2 = make-weighting(list(ridecymb2, restitem), 1)
+  make-weighting( list( list(ride1, 1.5), ride2), 2)
+end
+
+process bossa-soloing (tmpo, ampl)
+  with rhy = in-tempo(odds(0.5, 1/4, 1/3), tmpo),
+       ridecymb1 = make-heap({56 59 64 71 73 76}) , 
+       ridecymb2 = make-heap({66 71 73 78 83 85 87}),
+       amps = make-cycle( {.6 .5 .9 .7 .5 1 .6 .5 .9 .7 .5 1}),
+       knums = make-cycle( list( ridecymb1, "rest", or12r( 5),
+                                 or12r( 5), "rest" , ridecymb2,
+                                 ridecymb1, "rest" , ridecymb2,
+                                 ridecymb2, "rest" , or12r( 5),
+                                 or12r( 5), "rest" , ridecymb1,
+                                 or12r( 5), or12r(7), or12r(7)))                         
+  repeat 64
+  for k = next(knums)
+  for a = next(amps)
+  if (number?(k))
+    mp:midi(key: k, chan: 3, dur: rhy, amp: a * ampl)
+  end
+  wait rhy
+end
+
+
+
+
+; Again we will use the "Jazz Bass" alogrhythim to accompany the melody
+; but this time the rhythm is strict and melodic colours
+; (ie. anything that is not a tonic) is taken out. 3 algorhytms are 
+; needed as the tune requires a minor 7 shape and a diminished shape
+
+
+; first we set up the scale
+function getset (jscale, ints)
+  ; return the notes in scale at the positions in ints.
+  ; used to partition scale into tonic and decoration
+  loop with l = {}
+    for i in ints set l &= jscale[i]
+    finally l
+  end
+end
+
+;and a random select function
+function rancyc (data, prob)
+  list( make-cycle( data), prob)
+end
+
+
+
+;bossa-bass
+process bossa-bass (jscale, on, tmpo, ampl)
+  with k, rhy = in-tempo(1/2, tmpo),
+       tonics = make-weighting(getset(jscale, {0 4 4 4 7 })),
+       colors = make-weighting(getset(jscale, {1 3 5 6 8 })),
+       amps = make-cycle({.5}),
+       durs = make-cycle({1 1/4}) ,
+       ;; beat map. t is tonic, c is color, r is rest
+       bmap = make-cycle(
+                         list(
+                              ;; 5 possible patterns for triplets 1-4
+                              make-weighting(list(rancyc( {:t r r :t :t r r :t}, .8),
+                                                  rancyc( {:t r r :t :t r r :t}, .05),
+                                                  rancyc( {:t r :t :t r :t :t r}, .05),
+                                                  rancyc( {:t :t :t :t :t r r r}, .05),
+                                                  rancyc( {:t :t :t r :t r :t :t}, .05)),
+                                                1),
+                           ;; 5 possible patterns for 5-7
+                           make-weighting(list(rancyc( {:t r r :t :t r r :t}, 1)),
+                                             
+                                          1) ,
+                           ;; 5 possible patterns for 8-10
+                           make-weighting(list(rancyc( {:t r r :t :t r r :t}, .8),
+                                               rancyc( {:t :t :t r :t :t :c r}, .05),
+                                               rancyc( {:t r r r :t r r r}, .05),
+                                               rancyc( {:t :t :t r :t :t :t r}, .05),
+                                               rancyc( {:t :t r r :t :t :t :t}, .05)),
+                                          1),
+                           ;; two possible values for 11-12
+                           make-weighting(list(rancyc( {:t r r :t :t r r :t}, .8),
+                                               rancyc( {r r r r :t :t r :t}, .05),
+                                               rancyc( {:c r :t :c :t r :t :t}, .05),
+                                               rancyc( {r r :t :t r r :t :t}, .05),
+                                               rancyc( {r r :t r r r :t r}, 05)),
+                                          1) ,
+                           ;; two possible values for 13-15
+                           make-weighting(list(rancyc( {:t r r :t :t r r :t}, .8),
+                                               rancyc( {r r r r :t :t r :c}, .05),
+                                               rancyc( {:c r :t :t :t r :t :t}, .05),
+                                               rancyc( {r r :t :t r r :t :t}, .05),
+                                               rancyc( {r r :t r r r :t r}, .05))))
+)
+                                         
+                      
+  repeat 16
+  for x = next(bmap)
+  for d = in-tempo( next(durs), tmpo)
+  for a = next(amps)
+  if (equal?(x, :t))
+    set k = next(tonics)
+  else 
+    if (equal?( x, :c))
+      set k = next(colors)
+    else 
+      set k = x
+    end
+  end
+  if (number?(k))
+    mp:midi(key: transpose( k, on), chan: 1, dur: d, amp: a * ampl)
+  end
+  wait rhy
+end
+
+
+;bossa-bass2
+process bossa-bass2 (jscale, on, tmpo, ampl)
+  with k, rhy = in-tempo(1/2, tmpo),
+       tonics = make-weighting(getset(jscale, {0 0 2 2 7 })),
+       colors = make-weighting(getset(jscale, {1 3 5 6 8 })),
+       amps = make-cycle({.5}),
+       durs = make-cycle({1 1/4}) ,
+       ;; beat map. t is tonic, c is color, r is rest
+       bmap = make-cycle(
+                         list(
+                              ;; 5 possible patterns for triplets 1-4
+                              make-weighting(list(rancyc( {:t r r :t :t r r :t}, 1),
+                                                  rancyc( {:t r r :t :t r r :t}, .1),
+                                                  rancyc( {:t r :t :t r :t :t r}, .1),
+                                                  rancyc( {:t :t :t :t :t r r r}, .1),
+                                                  rancyc( {:t :t :t r :t r :t :t}, .1)),
+                                                1),
+                           ;; 5 possible patterns for 5-7
+                           make-weighting(list(rancyc( {:t r r :t :t r r :t}, 1)),
+                                             
+                                          1) ,
+                           ;; 5 possible patterns for 8-10
+                           make-weighting(list(rancyc( {:t r r :t :t r r :t}, 1),
+                                               rancyc( {:t :t :t r :t :t :c r}, .1),
+                                               rancyc( {:t r r r :t r r r}, .1),
+                                               rancyc( {:t :t :t r :t :t :t r}, .1),
+                                               rancyc( {:t :t r r :t :t :t :t}, .1)),
+                                          1),
+                           ;; two possible values for 11-12
+                           make-weighting(list(rancyc( {:t r r :t :t r r :t}, 1),
+                                               rancyc( {r r r r :t :t r :t}, .1),
+                                               rancyc( {:c r :t :c :t r :t :t}, .1),
+                                               rancyc( {r r :t :t r r :t :t}, .1),
+                                               rancyc( {r r :t r r r :t r}, .1)),
+                                          1) ,
+                           ;; two possible values for 13-15
+                           make-weighting(list(rancyc( {:t r r :t :t r r :t}, 1),
+                                               rancyc( {r r r r :t :t r :c}, .1),
+                                               rancyc( {:c r :t :t :t r :t :t}, .1),
+                                               rancyc( {r r :t :t r r :t :t}, .10),
+                                               rancyc( {r r :t r r r :t r}, .10))))
+)
+                                         
+                      
+  repeat 8
+  for x = next(bmap)
+  for d = in-tempo( next(durs), tmpo)
+  for a = next(amps)
+  if (equal?(x, :t))
+    set k = next(tonics)
+  else 
+    if (equal?( x, :c))
+      set k = next(colors)
+    else 
+      set k = x
+    end
+  end
+  if (number?(k))
+    mp:midi(key: transpose( k, on), chan: 1, dur: d, amp: a * ampl)
+  end
+  wait rhy
+end
+
+;bossa-bass3
+process bossa-bass3 (jscale, on, tmpo, ampl)
+  with k, rhy = in-tempo(1/2, tmpo),
+       tonics = make-weighting(getset(jscale, {0 2 4 4 7 })),
+       colors = make-weighting(getset(jscale, {1 3 5 6 8 })),
+       amps = make-cycle({.5}),
+       durs = make-cycle({1 1/4}) ,
+       ;; beat map. t is tonic, c is color, r is rest
+       bmap = make-cycle(
+                         list(
+                              ;; 5 possible patterns for triplets 1-4
+                              make-weighting(list(rancyc( {:t r r :t :t r r :t}, 1),
+                                                  rancyc( {:t r r :t :t r r :t}, .1),
+                                                  rancyc( {:t r :t :t r :t :t r}, .1),
+                                                  rancyc( {:t :t :t :t :t r r r}, .1),
+                                                  rancyc( {:t :t :t r :t r :t :t}, .1)),
+                                                1),
+                           ;; 5 possible patterns for 5-7
+                           make-weighting(list(rancyc( {:t r r :t :t r r :t}, 1)),
+                                             
+                                          1) ,
+                           ;; 5 possible patterns for 8-10
+                           make-weighting(list(rancyc( {:t r r :t :t r r :t}, 1),
+                                               rancyc( {:t :t :t r :t :t :c r}, .1),
+                                               rancyc( {:t r r r :t r r r}, .1),
+                                               rancyc( {:t :t :t r :t :t :t r}, .1),
+                                               rancyc( {:t :t r r :t :t :t :t}, .1)),
+                                          1),
+                           ;; two possible values for 11-12
+                           make-weighting(list(rancyc( {:t r r :t :t r r :t}, 1),
+                                               rancyc( {r r r r :t :t r :t}, .1),
+                                               rancyc( {:c r :t :c :t r :t :t}, .1),
+                                               rancyc( {r r :t :t r r :t :t}, .1),
+                                               rancyc( {r r :t r r r :t r}, .1)),
+                                          1) ,
+                           ;; two possible values for 13-15
+                           make-weighting(list(rancyc( {:t r r :t :t r r :t}, 1),
+                                               rancyc( {r r r r :t :t r :c}, .1),
+                                               rancyc( {:c r :t :t :t r :t :t}, .1),
+                                               rancyc( {r r :t :t r r :t :t}, .10),
+                                               rancyc( {r r :t r r r :t r}, .10))))
+)
+                                         
+                      
+  repeat 8
+  for x = next(bmap)
+  for d = in-tempo( next(durs), tmpo)
+  for a = next(amps)
+  if (equal?(x, :t))
+    set k = next(tonics)
+  else 
+    if (equal?( x, :c))
+      set k = next(colors)
+    else 
+      set k = x
+    end
+  end
+  if (number?(k))
+    mp:midi(key: transpose( k, on), chan: 1, dur: d, amp: a * ampl)
+  end
+  wait rhy
+end
+
+;metal-bass1
+process metal-bass (jscale, on, tmpo, ampl)
+  with k, rhy = in-tempo(1/2, tmpo),
+       tonics = make-weighting(getset(jscale, {0 0 0 0 0 })),
+       colors = make-weighting(getset(jscale, {1 3 5 6 8 })),
+       amps = make-cycle({1}),
+       durs = 1/2,
+       ;; beat map. t is tonic, c is color, r is rest
+       bmap = make-cycle(
+                         list(
+                              ;; 5 possible patterns for triplets 1-4
+                              make-weighting(list(rancyc( {:t :t :t :t :t :t :t :t}, 1)),
+                                                1),
+                           ;; 5 possible patterns for 5-7
+                           make-weighting(list(rancyc( {:t :t :t :t :t :t :t :t}, 1)),
+                                             
+                                          1) ,
+                           ;; 5 possible patterns for 8-10
+                           make-weighting(list(rancyc( {:t :t :t :t :t :t :t :t}, 1)),
+                                          1),
+                           ;; two possible values for 11-12
+                           make-weighting(list(rancyc( {:t :t :t :t :t :t :t :t}, 1)),
+                                          1) ,
+                           ;; two possible values for 13-15
+                           make-weighting(list(rancyc( {:t :t :t :t :t :t :t :t}, 1))))
+                                  
+)
+                                         
+                      
+  repeat 16
+  for x = next(bmap)
+  for d = in-tempo( next(durs), tmpo)
+  for a = next(amps)
+  if (equal?(x, :t))
+    set k = next(tonics)
+  else 
+    if (equal?( x, :c))
+      set k = next(colors)
+    else 
+      set k = x
+    end
+  end
+  if (number?(k))
+    mp:midi(key: transpose( k, on), chan: 1, dur: d, amp: a * ampl)
+  end
+  wait rhy
+end
+
+;metal-bass2
+process metal-bass2 (jscale, on, tmpo, ampl)
+  with k, rhy = in-tempo(1/2, tmpo),
+       tonics = make-weighting(getset(jscale, {0 0 0 0 0 })),
+       colors = make-weighting(getset(jscale, {1 3 5 6 8 })),
+       amps = make-cycle({1}),
+       durs = 1/2 ,
+       ;; beat map. t is tonic, c is color, r is rest
+       bmap = make-cycle(
+                         list(
+                              ;; 5 possible patterns for triplets 1-4
+                              make-weighting(list(rancyc( {:t :t :t :t :t :t :t :t}, 1)),
+                                                1),
+                           ;; 5 possible patterns for 5-7
+                           make-weighting(list(rancyc( {:t :t :t :t :t :t :t :t}, 1)),
+                                             
+                                          1) ,
+                           ;; 5 possible patterns for 8-10
+                           make-weighting(list(rancyc( {:t :t :t :t :t :t :t :t}, 1)),
+                                          1),
+                           ;; two possible values for 11-12
+                           make-weighting(list(rancyc( {:t :t :t :t :t :t :t :t}, 1)),
+                                          1) ,
+                           ;; two possible values for 13-15
+                           make-weighting(list(rancyc( {:t :t :t :t :t :t :t :t}, 1))))
+                                  
+)
+                                         
+                      
+  repeat 8
+  for x = next(bmap)
+  for d = in-tempo( next(durs), tmpo)
+  for a = next(amps)
+  if (equal?(x, :t))
+    set k = next(tonics)
+  else 
+    if (equal?( x, :c))
+      set k = next(colors)
+    else 
+      set k = x
+    end
+  end
+  if (number?(k))
+    mp:midi(key: transpose( k, on), chan: 1, dur: d, amp: a * ampl)
+  end
+  wait rhy
+end
+
+;metal-bass3
+process metal-bass3 (jscale, on, tmpo, ampl)
+  with k, rhy = in-tempo(1/2, tmpo),
+       tonics = make-weighting(getset(jscale, {0 0 0 0 0 })),
+       colors = make-weighting(getset(jscale, {1 3 5 6 8 })),
+       amps = make-cycle({1}),
+       durs = 1/2,
+       ;; beat map. t is tonic, c is color, r is rest
+       bmap = make-cycle(
+                         list(
+                               ;; 5 possible patterns for triplets 1-4
+                              make-weighting(list(rancyc( {:t :t :t :t :t :t :t :t}, 1)),
+                                                1),
+                           ;; 5 possible patterns for 5-7
+                           make-weighting(list(rancyc( {:t :t :t :t :t :t :t :t}, 1)),
+                                             
+                                          1) ,
+                           ;; 5 possible patterns for 8-10
+                           make-weighting(list(rancyc( {:t :t :t :t :t :t :t :t}, 1)),
+                                          1),
+                           ;; two possible values for 11-12
+                           make-weighting(list(rancyc( {:t :t :t :t :t :t :t :t}, 1)),
+                                          1) ,
+                           ;; two possible values for 13-15
+                           make-weighting(list(rancyc( {:t :t :t :t :t :t :t :t}, 1))))
+                                  
+)
+                                         
+                                  
+  repeat 8
+  for x = next(bmap)
+  for d = in-tempo( next(durs), tmpo)
+  for a = next(amps)
+  if (equal?(x, :t))
+    set k = next(tonics)
+  else 
+    if (equal?( x, :c))
+      set k = next(colors)
+    else 
+      set k = x
+    end
+  end
+  if (number?(k))
+    mp:midi(key: transpose( k, on), chan: 1, dur: d, amp: a * ampl)
+  end
+  wait rhy
+end
+
+; Again we will use the conductor process to sprout both iterations of this tune
+
+
+; BOSSA track
+process bossa-track (measures, changes, tempo, jscale)
+  with roots = make-cycle(changes),
+       ampl = 1
+  for meas below measures
+  for root = next(roots)
+  if (0 =  meas % 12)
+    set ampl = 1
+  end
+  sprout(clave-hihat(tempo, ampl))
+  sprout(clave-bass(tempo,ampl))
+  sprout(clave-hihat(tempo, ampl), 4)
+  sprout(clave-bass(tempo,ampl), 4)
+  sprout(clave-hihat(tempo, ampl), 8)
+  sprout(clave-bass(tempo,ampl), 8)
+  sprout(clave-hihat(tempo, ampl), 12)
+  sprout(clave-bass(tempo, ampl), 12)
+  sprout(bossa-rhythm(tempo, ampl))
+  sprout(bossa-rhythm2(tempo, ampl), 4)
+  sprout(bossa-rhythm3(tempo, ampl), 8)
+  sprout(bossa-rhythm4(tempo, ampl), 10)
+  sprout(bossa-rhythm(tempo, ampl), 12)
+  sprout(bossa-bass(jscale, transpose(root, -12), tempo, ampl))
+  sprout(bossa-bass(jscale, transpose(root, -10), tempo, ampl), 4)
+  sprout(bossa-bass2(jscale, transpose(root, -10), tempo, ampl), 8)
+  sprout(bossa-bass3(jscale, transpose(root, -11), tempo, ampl), 10)
+  sprout(bossa-bass(jscale, transpose(root, -12), tempo, ampl), 12)
+  sprout(bossa-melody1(tempo,ampl))
+  sprout(bossa-melody2(tempo,ampl), 4)
+  sprout(bossa-melody3(tempo,ampl), 8)
+  sprout(bossa-melody4(tempo,ampl), 12)
+  wait in-tempo(32, tempo)
+end
+
+sprout(bossa-track( 32, bossa-changes, bossa-tempo, bossa-scale))
+
+stop()
+
+; METAL track
+process metal-track (measures, changes, tempo, jscale)
+  with roots = make-cycle(changes),
+       ampl = 1
+  for meas below measures
+  for root = next(roots)
+  if (0 =  meas % 12)
+    set ampl = 1
+  end
+  sprout(straight-hihat(tempo, ampl))
+  sprout(snare-bass(tempo,ampl))
+  sprout(straight-hihat(tempo, ampl), 4)
+  sprout(snare-bass(tempo,ampl), 4)
+  sprout(straight-hihat(tempo, ampl), 8)
+  sprout(snare-bass(tempo,ampl), 8)
+  sprout(straight-hihat(tempo, ampl), 12)
+  sprout(snare-bass(tempo, ampl), 12)
+  sprout(straight-hihat(tempo, ampl), 16)
+  sprout(snare-bass(tempo, ampl), 16)
+  sprout(metal-bass(jscale, transpose(root, -12), tempo, ampl))
+  sprout(metal-bass(jscale, transpose(root, -9), tempo, ampl), 4)
+  sprout(metal-bass2(jscale, transpose(root, -5), tempo, ampl), 8)
+  sprout(metal-bass3(jscale, transpose(root, -6), tempo, ampl), 10)
+  sprout(metal-bass(jscale, transpose(root, -12), tempo, ampl), 12)
+  sprout(metal-melody1(tempo,ampl))
+  sprout(metal-melody2(tempo,ampl), 4)
+  sprout(metal-melody3(tempo,ampl), 8)
+  sprout(metal-melody4(tempo,ampl), 12)
+  wait in-tempo(32, tempo)
+end
+
+sprout(metal-track( 32, doom-changes, doom-tempo, doom-scale))
+
+
+stop()
+
+; BOSSA solo track
+process bossa-solo-track(measures, changes, tempo, jscale)
+  with roots = make-cycle(changes),
+       ampl = 1
+  for meas below measures
+  for root = next(roots)
+  if (0 =  meas % 12)
+    set ampl = 1
+  end
+  sprout(clave-hihat(tempo, ampl))
+  sprout(clave-bass(tempo,ampl))
+  sprout(clave-hihat(tempo, ampl), 4)
+  sprout(clave-bass(tempo,ampl), 4)
+  sprout(clave-hihat(tempo, ampl), 8)
+  sprout(clave-bass(tempo,ampl), 8)
+  sprout(clave-hihat(tempo, ampl), 12)
+  sprout(clave-bass(tempo, ampl), 12)
+  sprout(bossa-rhythm(tempo, ampl))
+  sprout(bossa-rhythm2(tempo, ampl), 4)
+  sprout(bossa-rhythm3(tempo, ampl), 8)
+  sprout(bossa-rhythm4(tempo, ampl), 10)
+  sprout(bossa-rhythm(tempo, ampl), 12)
+  sprout(bossa-bass(jscale, transpose(root, -12), tempo, ampl))
+  sprout(bossa-bass(jscale, transpose(root, -10), tempo, ampl), 4)
+  sprout(bossa-bass2(jscale, transpose(root, -10), tempo, ampl), 8)
+  sprout(bossa-bass3(jscale, transpose(root, -11), tempo, ampl), 10)
+  sprout(bossa-bass(jscale, transpose(root, -12), tempo, ampl), 12)
+  sprout(bossa-soloing(tempo,ampl), 17)
+  wait in-tempo(32, tempo)
+end
+
+sprout(bossa-solo-track( 32, bossa-changes, bossa-tempo, bossa-scale))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+; The last 3 use elements of the first two examples to create 
+; some non-specific styles of music
+
+
+;; Minimalism ala Laurie Spiegel
+
+;SPIEGEL ARP
+process spiegel-arp (jscale, on, tmpo, ampl)
+  with k, rhy = in-tempo(1/4, tmpo),
+       tonics = make-weighting(getset(jscale, {0 2 4 6 7})),
+       colors = make-weighting(getset(jscale, {1 3 5 6 8})),
+       amps = make-cycle({.5}),
+       durs = make-cycle({1/8 1/8 1/8}) ,
+       ;; beat map. t is tonic, c is color, r is rest
+       bmap = make-cycle(
+                         list(
+                              ;; 5 possible patterns for triplets 1-4
+                              make-weighting(list(rancyc( {:t r r r :t :t r r}, .20),
+                                                  rancyc( {:t r r :t :t r r :c}, .20),
+                                                  rancyc( {:t r :t :t r :t :t r}, .20),
+                                                  rancyc( {:t :c :t :c :t r r r}, .20),
+                                                  rancyc( {:t :c :t r :t r :c :c}, .20)),
+                                                1),
+                           ;; 5 possible patterns for 5-7
+                           make-weighting(list(rancyc( {r r :t r :t :t r :c}, .20),
+                                               rancyc( {r r r r :t :c r :c}, .20),
+                                               rancyc( {:c r :t :c :c r :t :t}, .20),
+                                               rancyc( {r r :t :t r r :t :t}, .20),
+                                               rancyc( {r r :c r r r :c r}, .20)),
+                                          1) ,
+                           ;; 5 possible patterns for 8-10
+                           make-weighting(list(rancyc( {:t r :c r :t r :c r}, .20),
+                                               rancyc( {:t :t :c r :t :t :c r}, .20),
+                                               rancyc( {:t r r r :t r r r}, .20),
+                                               rancyc( {:t :t :c r :t :t :c r}, .20),
+                                               rancyc( {:t :t r r :t :t :c :t}, .20)),
+                                          1),
+                           ;; two possible values for 11-12
+                           make-weighting(list(rancyc( {r r :t r :t :t r :c}, .20),
+                                               rancyc( {r r r r :t :c r :c}, .20),
+                                               rancyc( {:c r :t :c :c r :t :t}, .20),
+                                               rancyc( {r r :t :t r r :t :t}, .20),
+                                               rancyc( {r r :c r r r :c r}, .20)),
+                                          1) ,
+                           ;; two possible values for 13-15
+                           make-weighting(list(rancyc( {r r :t r :t :t r :c}, .20),
+                                               rancyc( {r r r r :t :c r :c}, .20),
+                                               rancyc( {:c r :t :c :c r :t :t}, .20),
+                                               rancyc( {r r :t :t r r :t :t}, .20),
+                                               rancyc( {r r :c r r r :c r}, .20))))
+)
+                                         
+                      
+  repeat 16
+  for x = next(bmap)
+  for d = in-tempo( next(durs), tmpo)
+  for a = next(amps)
+  if (equal?(x, :t))
+    set k = next(tonics)
+  else 
+    if (equal?( x, :c))
+      set k = next(colors)
+    else 
+      set k = x
+    end
+  end
+  if (number?(k))
+    mp:midi(key: transpose( k, on), chan: 7, dur: d, amp: a * ampl)
+    mp:midi(key: transpose( k + 7, on), chan: 7, dur: d, amp: a * ampl)
+
+  end
+  wait rhy
+end
+
+
+; Using the piano rhythm from the "automatic jazz" example but switched to 
+; simple time instead of compound
+
+process 4-piano (jscale, on, tmpo, ampl)
+  ;; generate a measure of jazz harmony.
+  ;; measure contains either 8 or 12 notes.
+  with reps = odds(.5, 2, 4),
+       rhys = #? ((reps = 2), make-cycle({2 1}), make-cycle({1/4})) ,
+       amps = #? ((reps = 4), make-weighting(list(make-cycle({.7 .6 .5 .4}),
+                                                  make-cycle({.5 .4 .3 .4}))),
+                              make-weighting(list(make-cycle({.8 .7 .6 .5}),
+                                                  make-cycle({.7 .7 .7 .7})))),
+       knms = make-weighting(list(list(make-heap(jscale, make-weighting({1 2 3 4})),
+                                       make-weighting({1.15 1.65})),
+                                  "rest"))
+  repeat reps
+  for r = in-tempo(next(rhys), tmpo)
+  for a = next(amps)
+  for l = next(knms, #t)
+  loop for k in l
+    if (number?(k))
+      mp:midi(key: transpose(k, on), dur: r, amp: a * ampl, chan: 1)
+    end
+  end
+  wait r
+end
+
+; and a piano which uses compound time
+process 6-piano (jscale, on, tmpo, ampl)
+  with reps = odds(.5, 8, 4),
+       rhys = #? ((reps = 3), make-cycle({2/3 1/3}), make-cycle({1/2})) ,
+       amps = #? ((reps = 2), make-weighting(list(make-cycle({.3 .3 .3 .3}),
+                                                  make-cycle({.3 .3 .3 .3}))),
+                              make-weighting(list(make-cycle({.3 .3 .3 .3}),
+                                                  make-cycle({.3 .3 .3 .3})))),
+       knms = make-weighting(list(list(make-heap(jscale, make-weighting({1 2 3 4})),
+                                       make-weighting({1.15 1.65})),
+                                  "rest"))
+  repeat reps
+  for r = in-tempo(next(rhys), tmpo)
+  for a = next(amps)
+  for l = next(knms, #t)
+  loop for k in l
+    if (number?(k))
+      mp:midi(key: transpose(k, on), dur: r, amp: a * ampl, chan: 0)
+    end
+  end
+  wait r
+end
+
+
+
+; SPIEGEL track
+process spiegel-track (measures, changes, tempo, jscale)
+  with roots = make-cycle(changes),
+       ampl = 1
+  for meas below measures
+  for root = next(roots)
+  if (0 =  meas % 12)
+    set ampl = 1
+  end
+  sprout(4-piano(jscale, root, tempo, ampl))
+  sprout(6-piano(jscale, root, tempo, ampl))
+  sprout(simple-bass(jscale, transpose(root, -24), tempo, ampl))
+  sprout(spiegel-arp(jscale, transpose(root, -12), tempo, ampl))
+  sprout(spiegel-arp(jscale, transpose(root, 0), tempo, ampl), 1.5)
+  sprout(spiegel-arp(jscale, transpose(root, 0), tempo, ampl), .20)
+  sprout(spiegel-arp(jscale, transpose(root, +12), tempo, ampl), 3)
+  sprout(spiegel-arp(jscale, transpose(root, +12), tempo, ampl), 4.5)
+ wait in-tempo(4, tempo)
+end
+
+sprout(spiegel-track(32, spiegel-changes, spiegel-tempo, spiegel-scale))
+
+
+stop()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+; The original intent of this project was to create a text based adventure
+; game with soundtracks so I've included a two of the loops
+
+;WATER ARP
+process water-arp (tmpo, ampl)
+  with rhy = in-tempo(1/8, tmpo),
+       dur = in-tempo(1/8, tmpo),
+       amp = .40,
+       pat = make-cycle(water-notes)
+  repeat 32
+  for x = next(pat)
+  if (number?(x))
+  mp:midi(key: next(pat), chan: 3, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+process water-arp2 (tmpo, ampl)
+  with rhy = in-tempo(1/12, tmpo),
+       dur = in-tempo(1/8, tmpo),
+       amp = .40,
+       pat = make-heap(water-notes)
+  repeat 32
+  for x = next(pat)
+  if (number?(x))
+  mp:midi(key: next(pat), chan: 3, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end 
+
+;Drum FILLS
+process fills (tmpo, ampl)
+  with rhy = in-tempo(1/4, tmpo),
+       dur = in-tempo( 1, tmpo),
+       amp = .3,
+       pat = make-cycle({0 0 0 0 0 0 0 0 41 43 45 35 47 48 50 53})
+  repeat 16
+  for x = next(pat)
+  if (number?(x))
+    mp:midi(key: x, chan: 9, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+
+;WATER TRACK
+process water-track (measures, changes, tempo, jscale)
+  with roots = make-cycle(changes),
+       ampl = 1
+  for meas below measures
+  for root = next(roots)
+  if (0 =  meas % 12)
+    set ampl = 1
+  end
+  sprout(4-piano(jscale, root, tempo, ampl))
+  sprout(straight-hihat(tempo, ampl))
+  sprout(snare-bass(tempo,ampl))
+  sprout(simple-bass(jscale, transpose(root, -36), tempo, ampl))
+  sprout(fills(tempo, ampl))
+  sprout(water-arp(tempo, ampl))
+  sprout(water-arp2(tempo, ampl), .5)
+  wait in-tempo(4, tempo)
+end
+
+sprout(water-track( 8, water-changes, jazz-tempo, water-scale))
+
+stop()
+
+
+
+
+
+
+;MORNING ARP
+process morning-arp (tmpo, ampl)
+  with rhy = in-tempo(3/2, tmpo),
+       dur = in-tempo(1/4, tmpo),
+       amp = odds (.5, .4, .2),
+       pat = make-cycle({67 64 62 60 60 64})
+  repeat 6
+  for x = next(pat)
+  if (number?(x))
+  mp:midi(key: next(pat), chan: 8, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+
+;6 piano (compound time)
+process 6-piano (jscale, on, tmpo, ampl)
+  ;; generate a measure of jazz harmony.
+  ;; measure contains either 8 or 12 notes.
+  with reps = odds(.5, 8, 4),
+       rhys = #? ((reps = 3), make-cycle({2/3 1/3}), make-cycle({1/2})) ,
+       amps = #? ((reps = 2), make-weighting(list(make-cycle({.3 .3 .3 .3}),
+                                                  make-cycle({.3 .3 .3 .3}))),
+                              make-weighting(list(make-cycle({.3 .3 .3 .3}),
+                                                  make-cycle({.3 .3 .3 .3})))),
+       knms = make-weighting(list(list(make-heap(jscale, make-weighting({1 2 3 4})),
+                                       make-weighting({1.15 1.65})),
+                                  "rest"))
+  repeat reps
+  for r = in-tempo(next(rhys), tmpo)
+  for a = next(amps)
+  for l = next(knms, #t)
+  loop for k in l
+    if (number?(k))
+      mp:midi(key: transpose(k, on), dur: r, amp: a * ampl, chan: 0)
+    end
+  end
+  wait r
+end
+
+;hi-hat in 6/8
+process compound-drums (tmpo, ampl)
+  with rhy = in-tempo(1/3, tmpo),
+       dur = in-tempo( 1/3, tmpo),
+       amp = .5,
+       pat = make-cycle({42 42 42 42 42 42})
+  repeat 12
+  for x = next(pat)
+  if (number?(x))
+    mp:midi(key: x, chan: 9, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+;Perussive elements in 6/8
+process compound-fills (tmpo, ampl)
+  ;; generate a 6/8 measure of high-hat:
+  ;;   rest hihat rest hihat
+  with rhy = in-tempo(1/6, tmpo),
+       dur = in-tempo( 1/3, tmpo),
+       amp = .5,
+       pat = make-heap({54 0 51 0 67 0 0 68 0 0 0 51 0})
+  repeat 12
+  for x = next(pat)
+  if (number?(x))
+    mp:midi(key: x, chan: 9, dur: dur, amp: amp * ampl)
+  end
+  wait rhy
+end
+
+
+;MORNING TRACK (an attempt at utilizing 90 bpm)
+process morning-track (measures, changes, tempo, jscale)
+  with roots = make-cycle(changes),
+       ampl = 1
+  for meas below measures
+  for root = next(roots)
+  if (0 =  meas % 12)
+    set ampl = 1
+  end
+  sprout(6-piano(jscale, root, tempo, ampl))
+  sprout(6-piano(jscale, root, tempo, ampl), 3)
+  sprout(compound-hihat(tempo, ampl))
+  sprout(compound-fills(tempo,ampl), 5.333)
+  sprout(snare-bass(tempo,ampl))
+  sprout(compound-bass(jscale, transpose(root, -24), tempo, ampl))
+  sprout(morning-arp(tempo, ampl))
+  wait in-tempo(4, tempo)
+end
+
+sprout(morning-track( 8, morning-changes, morning-tempo, morning-scale))
+
+
+stop()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
